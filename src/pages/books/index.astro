@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import BookCard from '../../components/BookCard.astro';
+
+const books = (await getCollection('books', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Base title="Books" description="Books by Saif Ullah — read online chapter by chapter.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Books</h2>
+        <span>{books.length} published</span>
+      </div>
+      {books.length === 0 ? (
+        <p class="empty">Books synced from Drive will appear here.</p>
+      ) : (
+        <div class="card-grid">
+          {books.map((b) => <BookCard book={b} />)}
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

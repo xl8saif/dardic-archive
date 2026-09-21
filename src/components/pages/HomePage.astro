@@ -1,0 +1,133 @@
+---
+/**
+ * Home — locale-aware component. Rendered at:
+ *   /            (English)
+ *   /ar/         (العربية — RTL, Amiri chrome)
+ *   /ur/         (اردو — RTL, Nastaliq chrome)
+ */
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../ArticleCard.astro';
+import { SITE } from '../../data/profile';
+import { PROJECTS, LANGUAGES } from '../../data/professional';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  langPath?: string;
+}
+
+const { locale, langPath = '' } = Astro.props;
+const T = t(locale);
+const rtl = locale !== 'en';
+const siteUrl = Astro.site ?? new URL('http://localhost:4321');
+
+const articles = (await getCollection('articles', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featured = (articles.filter((a) => a.data.featured).concat(articles)).slice(0, 3);
+const fikrcd = PROJECTS.find((p) => p.id === 'fikrcd')!;
+
+const title = `${T.site_title} — ${T.site_tagline}`;
+const description = T.hero_lead;
+const alternates = { en: '/', ar: '/ar/', ur: '/ur/' };
+
+const langName: Record<string, string> = {
+  ik: T.lang_ik, shina: T.lang_shina, ur: T.lang_urdu, ar: T.lang_arabic,
+};
+---
+
+<Base title={title} description={description} lang={locale} alternates={alternates}>
+  <section class="hero">
+    <div class="container">
+      <p class="crumb" style="margin:0 0 0.4rem; letter-spacing:0.08em;">{T.hero_h1}</p>
+      <h1>{T.site_title}</h1>
+      <p class="lead" dir={rtl ? 'rtl' : undefined}>
+        <strong>{T.pillar1_t}</strong> · <strong>{T.pillar2_t}</strong> ·
+        <strong>{T.pillar3_t}</strong> — {T.hero_lead.split(' — ')[1] ?? T.hero_lead}
+      </p>
+      <p class="urdu-tagline" lang="ur" dir="rtl">{SITE.taglineUr}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/research/">{T.nav_research}</a>
+        <a class="btn btn-ghost" href="/languages/">{T.nav_languages}</a>
+        <a class="btn btn-ghost" href="/publications/">{T.nav_publications}</a>
+        <a class="btn btn-ghost" href="/translation/">{T.dd_work_translation}</a>
+        <a class="btn btn-ghost" href="/archive/">{T.nav_archive}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="card-grid">
+        <article class="card">
+          <div class="card-body">
+            <h2 class="card-title" style="margin:0;"><a href="/research/">{T.pillar1_t}</a></h2>
+            <p class="card-desc" dir={rtl ? 'rtl' : undefined}>
+              {T.pillar1_d.split('FiKR&CD')[0]}
+              <a href="/fikrcd/">FiKR&CD</a>. {T.pillar1_d.split('FiKR&CD')[1] ?? ''}
+            </p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <h2 class="card-title" style="margin:0;"><a href="/translation/">{T.pillar2_t}</a></h2>
+            <p class="card-desc" dir={rtl ? 'rtl' : undefined}>{T.pillar2_d}</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <h2 class="card-title" style="margin:0;"><a href="/digital/">{T.pillar3_t}</a></h2>
+            <p class="card-desc" dir={rtl ? 'rtl' : undefined}>{T.pillar3_d}</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background: var(--bg-soft); border-block: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-head">
+        <h2>{T.selected}</h2>
+        <a href="/articles/">{T.all_articles}</a>
+      </div>
+      {featured.length === 0 ? (
+        <p class="empty">{T.selected}</p>
+      ) : (
+        <div class="card-grid">{featured.map((a) => <ArticleCard article={a} />)}</div>
+      )}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="card" style="padding: 1.6rem 1.8rem;">
+        <div style="display: flex; gap: 1.6rem; align-items: center; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 260px;">
+            <h2 style="margin: 0 0 0.4rem;">{T.publish_t}</h2>
+            <p class="lede" style="margin: 0;" dir={rtl ? 'rtl' : undefined}>{T.publish_d}</p>
+          </div>
+          <a class="btn btn-primary" href={langPath ? `${langPath}/contribute/` : '/contribute/'}>{T.publish_btn}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>{T.profiles}</h2>
+        <a href="/languages/">{T.all_profiles}</a>
+      </div>
+      <div class="tag-row">
+        {LANGUAGES.map((l) => (
+          <a class="tag" href={`/languages/${l.name.toLowerCase().replace(/ /g, '-')}/`}>
+            {l.name}{l.native ? ` ${l.native}` : ''}
+          </a>
+        ))}
+      </div>
+      <p class="lede" style="margin-top: 1.4rem;" dir={rtl ? 'rtl' : undefined}>
+        {T.research_home} <a href="/fikrcd/">FiKR&CD</a> — {fikrcd.fullName ?? fikrcd.name}
+      </p>
+    </div>
+  </section>
+</Base>

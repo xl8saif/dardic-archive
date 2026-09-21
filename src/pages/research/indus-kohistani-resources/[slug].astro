@@ -1,0 +1,253 @@
+---
+import Base from '../../../layouts/Base.astro';
+import {
+  IK_RESOURCES,
+  getIkResource,
+  workKindLabel,
+  langMeta,
+  hasValue,
+  type IkResource,
+} from '../../../data/ikResources';
+import MetaField from '../../../components/MetaField.astro';
+import RoleLine from '../../../components/RoleLine.astro';
+
+export function getStaticPaths() {
+  return IK_RESOURCES.map((w) => ({ params: { slug: w.slug }, props: { work: w } }));
+}
+
+interface Props { work: IkResource }
+const { work: w } = Astro.props;
+
+const tMeta = langMeta(w.titleLang);
+const siteUrl = Astro.site ?? new URL('http://localhost:4321');
+
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: w.title,
+  ...(w.translatedTitle ? { alternateName: w.translatedTitle } : {}),
+  ...(w.originalTitle ? { subjectOf: { '@type': 'CreativeWork', name: w.originalTitle } } : {}),
+  ...(w.authors?.length ? { author: w.authors.map((a) => ({ '@type': 'Person', name: a.name })) } : {}),
+  ...(w.translators?.length ? { translator: w.translators.map((t) => ({ '@type': 'Person', name: t.name })) } : {}),
+  ...(w.editors?.length ? { editor: w.editors.map((e) => ({ '@type': 'Person', name: e.name })) } : {}),
+  ...(w.contributors?.length ? { contributor: w.contributors.map((c) => ({ '@type': 'Person', name: c.name })) } : {}),
+  inLanguage: w.titleLang ?? 'mvb',
+  ...(w.publicationYear ? { datePublished: String(w.publicationYear) } : {}),
+  ...(w.publisher ? { publisher: { '@type': 'Organization', name: w.publisher } } : {}),
+  ...(w.isbn ? { identifier: `ISBN ${w.isbn}` } : {}),
+  ...(w.doi ? { identifier: `https://doi.org/${w.doi}` } : {}),
+  ...(w.externalUrl ? { url: w.externalUrl } : {}),
+  ...(w.shortDescription ? { description: w.shortDescription } : {}),
+});
+
+---
+
+<Base
+  title={`${w.title} — Indus-Kohistani Written Resources`}
+  description={w.shortDescription ?? `Research record: ${workKindLabel(w.kinds)} in Indus-Kohistani${w.dialect ? ` (${w.dialect} variety)` : ''}.`}
+  structuredData={jsonLd}
+>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb">
+          <a href="/research/">Research</a> /{' '}
+          <a href="/research/indus-kohistani-resources/">Translation &amp; Written Resources</a> /{' '}
+          <span>{workKindLabel(w.kinds)}</span>
+        </p>
+        <div dir={tMeta.dir}>
+          <h1 lang={w.titleLang ?? 'en'}>{w.title}</h1>
+        </div>
+        {w.originalTitle && (
+          <p class="lede" style="margin-top:0.2rem;">
+            Translation of <em>{w.originalTitle}</em>
+          </p>
+        )}
+        <div class="meta">
+          <span>{workKindLabel(w.kinds)}</span>
+          <span>· {w.status}</span>
+          {(w.translationYear ?? w.publicationYear) && <span>· {w.translationYear ?? w.publicationYear}</span>}
+        </div>
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner">
+
+        {w.cover && w.cover.src && (
+          <figure class="article-cover">
+            <img src={w.cover.src} alt={w.cover.alt} />
+            {(w.cover.caption || w.cover.credit) && (
+              <figcaption>
+                {w.cover.caption}
+                {w.cover.credit && ` — ${w.cover.credit}`}
+              </figcaption>
+            )}
+          </figure>
+        )}
+
+        {hasValue(w.shortDescription) && <p class="lede">{w.shortDescription}</p>}
+
+        {/* ---------------- authorship & roles ---------------- */}
+        <h2>Authorship &amp; roles</h2>
+        <RoleLine label="Original author(s)" people={w.authors} />
+        <RoleLine label="Translator(s)" people={w.translators} />
+        <RoleLine label="Editor(s)" people={w.editors} />
+        <RoleLine label="Linguistic reviewer(s)" people={w.reviewers} />
+        <RoleLine label="Contributor(s)" people={w.contributors} />
+
+        {/* ---------------- bibliographic ---------------- */}
+        <h2>Bibliographic information</h2>
+        <MetaField label="Original language" value={w.originalLanguage} />
+        <MetaField label="Target language" value={w.targetLanguage} />
+        <MetaField label="Translation year" value={w.translationYear} />
+        <MetaField label="Publication year" value={w.publicationYear} />
+        <MetaField label="Publisher / organisation" value={w.publisher} />
+        <MetaField label="Edition" value={w.edition} />
+        <MetaField label="Status" value={w.status} />
+        <MetaField label="ISBN / identifier" value={w.isbn} />
+        {hasValue(w.doi) && (
+          <p style="margin:0.2rem 0;">
+            <strong>DOI:</strong>{' '}
+            <a href={`https://doi.org/${w.doi}`} target="_blank" rel="noopener">{w.doi}</a>
+          </p>
+        )}
+        {hasValue(w.externalUrl) && (
+          <p style="margin:0.2rem 0;">
+            <strong>External publication:</strong>{' '}
+            <a href={w.externalUrl} target="_blank" rel="noopener">{w.externalUrlLabel ?? w.externalUrl} ↗</a>
+          </p>
+        )}
+
+        {/* ---------------- linguistic ---------------- */}
+        {(hasValue(w.dialect) || hasValue(w.script) || hasValue(w.orthography) || hasValue(w.terminologyNotes) || hasValue(w.linguisticReview) || hasValue(w.languageSignificance)) && (
+          <>
+            <h2>Linguistic information</h2>
+            <MetaField label="Indus-Kohistani variety / dialect" value={w.dialect} />
+            <MetaField label="Script" value={w.script} />
+            <MetaField label="Orthography" value={w.orthography} />
+            <MetaField label="Terminology notes" value={w.terminologyNotes} />
+            <MetaField label="Linguistic review" value={w.linguisticReview} />
+            <MetaField label="Language-related significance" value={w.languageSignificance} />
+          </>
+        )}
+
+        {/* ---------------- classification ---------------- */}
+        <h2>Classification</h2>
+        <MetaField label="Work type(s)" value={workKindLabel(w.kinds)} />
+        <MetaField label="Subject" value={w.subject} />
+        <MetaField label="Research area" value={w.researchArea} />
+        <MetaField label="Related project" value={w.relatedProject} />
+        <MetaField label="Related organisation" value={w.relatedOrganisation} />
+        {hasValue(w.relatedPublication) && (
+          <p style="margin:0.2rem 0;">
+            <strong>Related publication:</strong> see <a href="/publications/">Publications</a> — {w.relatedPublication}
+          </p>
+        )}
+
+        {/* ---------------- description & notes ---------------- */}
+        {(hasValue(w.translatorsNote) || hasValue(w.documentationNote) || hasValue(w.preservationSignificance) || hasValue(w.methodology)) && (
+          <>
+            <h2>Description &amp; notes</h2>
+            <MetaField label="Translator's note" value={w.translatorsNote} />
+            <MetaField label="Research / documentation note" value={w.documentationNote} />
+            <MetaField label="Preservation significance" value={w.preservationSignificance} />
+            <MetaField label="Methodology / process" value={w.methodology} />
+          </>
+        )}
+
+        {/* ---------------- evidence & media ---------------- */}
+        {(hasValue(w.pdfUrl) || hasValue(w.manuscriptPages) || hasValue(w.photographs) || hasValue(w.relatedAudioVideo) || hasValue(w.references) || hasValue(w.sourceMaterial)) && (
+          <>
+            <h2>Evidence &amp; media</h2>
+            {w.pdfUrl && w.pdfVisibility !== 'private' && (
+              <p style="margin:0.2rem 0;">
+                <strong>Resource:</strong>{' '}
+                <a href={w.pdfUrl} target="_blank" rel="noopener">{w.pdfLabel ?? 'PDF / external resource'} ↗</a>
+              </p>
+            )}
+            {w.pdfUrl && w.pdfVisibility === 'private' && (
+              <p class="data-note" style="margin:0.2rem 0;">
+                A resource file exists for this work but is private/internal and is not distributed here.
+              </p>
+            )}
+            {w.manuscriptPages && w.manuscriptPages.some((m) => m.visibility === 'public') && (
+              <div>
+                <strong>Manuscript / scanned pages</strong>
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); margin-top:0.5rem;">
+                  {w.manuscriptPages.filter((m) => m.visibility === 'public').map((m) => (
+                    <figure style="margin:0;">
+                      <img src={m.src} alt={m.alt} style="border:1px solid var(--border); border-radius:8px;" />
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            )}
+            {w.photographs && w.photographs.length > 0 && (
+              <div>
+                <strong>Photographs</strong>
+                <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); margin-top:0.5rem;">
+                  {w.photographs.map((p) => (
+                    <figure style="margin:0;">
+                      <img src={p.src} alt={p.alt} style="border:1px solid var(--border); border-radius:8px;" />
+                      {p.caption && <figcaption class="data-note">{p.caption}</figcaption>}
+                    </figure>
+                  ))}
+                </div>
+              </div>
+            )}
+            {w.relatedAudioVideo && w.relatedAudioVideo.length > 0 && (
+              <p style="margin:0.2rem 0;">
+                <strong>Related audio/video:</strong>{' '}
+                {w.relatedAudioVideo.map((av, i) => (
+                  <>
+                    {i > 0 && ' · '}
+                    <a href={av.url} target="_blank" rel="noopener">{av.label} ↗</a>
+                  </>
+                ))}
+              </p>
+            )}
+            {w.references && w.references.length > 0 && (
+              <div>
+                <strong>References</strong>
+                <ul>
+                  {w.references.map((r) => (
+                    <li>
+                      {r.url
+                        ? <a href={r.url} target="_blank" rel="noopener">{r.label} ↗</a>
+                        : r.doi
+                          ? <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener">{r.label} — DOI {r.doi}</a>
+                          : r.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <MetaField label="Source material" value={w.sourceMaterial} />
+          </>
+        )}
+
+        {/* ---------------- related content ---------------- */}
+        <h2>Related content</h2>
+        <ul>
+          <li><a href="/languages/indus-kohistani/">Indus-Kohistani — language profile</a></li>
+          <li><a href="/fikrcd/">FiKR&amp;CD</a>{w.relatedProject && <> — this work relates to: {w.relatedProject}</>}</li>
+          <li><a href="/folklore/">Folklore &amp; Oral Traditions</a></li>
+          <li><a href="/publications/">Publications</a></li>
+          {w.relatedArticles && w.relatedArticles.length > 0 && (
+            <li>
+              Related research articles:{' '}
+              {w.relatedArticles.map((a, i) => (
+                <>
+                  {i > 0 && ', '}
+                  <a href={`/articles/${a}/`}>{a}</a>
+                </>
+              ))}
+            </li>
+          )}
+          <li><a href="/research/indus-kohistani-resources/">← Back to the full collection</a></li>
+        </ul>
+      </div>
+    </div>
+  </article>
+</Base>

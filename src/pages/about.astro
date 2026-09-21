@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+import { IDENTITY, SITE, FIKRCD, LINKS } from '../data/profile';
+---
+
+<Base title={`About — ${IDENTITY.name}`} description="Translator and localization specialist, language researcher and endangered-language preservation advocate based in Gilgit-Baltistan, Pakistan.">
+  <section class="section">
+    <div class="container" style="max-width: 760px;">      <div class="about-header">
+        <figure class="portrait-frame" style="margin: 0;">
+          <img
+            src="/images/saif-ullah-portrait.jpg"
+            alt="Portrait of Saif Ullah"
+            width="230"
+            height="319"
+          />
+        </figure>
+        <div class="who">
+          <h1 style="font-family: var(--font-latin); margin-bottom: 0.3rem;">{IDENTITY.name}</h1>
+          <p style="color: var(--ink-soft); font-size: 1.08rem; margin: 0 0 0.5rem;">{IDENTITY.roles.join(' · ')}</p>
+          <p class="data-note" style="margin: 0;">{IDENTITY.location}</p>
+        </div>
+      </div>
+
+      <div class="prose-inner" style="padding: 0;">
+        <p>
+          Assalam-o-alaikum. I work at the crossing point of language research, preservation,
+          translation and language technology. Much of my research energy goes to
+          <strong>Indus-Kohistani</strong> and <strong>Shina</strong> — Dardic languages of the
+          Indus Kohistan — through <a href="/fikrcd/">{FIKRCD.abbrev}</a>, the forum I co-founded
+          with {FIKRCD.founders[1]} in {FIKRCD.established}.
+        </p>
+        <p>
+          My Indus-Kohistani preservation work is documented production, not advocacy alone:
+          through <a href="/research/indus-kohistani-resources/">Translation &amp; Written Resources</a>
+          it includes translating and adapting books, preparing educational and
+          children's material, developing terminology, grammar and orthographic resources,
+          and publishing in the established Indus-Kohistani orthography — alongside
+          language documentation, folklore and oral traditions, and digital preservation.
+        </p>
+        <p>
+          Alongside research I have worked for more than twelve years as a professional
+          translator and localization specialist, across legal, government, religious, gaming
+          and speech-technology domains — including Urdu game localization for
+          PUBG MOBILE, multilingual linguistic QA for iFLYTEK, and Shina media verification.
+        </p>
+        <p>
+          My working belief is simple: a language survives when it can be written, read,
+          taught and processed digitally. Research finds the words; orthography fixes them;
+          typography renders them; localization and language technology put them to work.
+        </p>
+
+        <blockquote>
+          The central idea of this site: language research + preservation + translation +
+          localization + digital language technology — each strengthening the others.
+        </blockquote>
+
+        <h2>Editorial position</h2>
+        <p>
+          This site is a professional and scholarly record. It does not exaggerate
+          credentials, fabricate projects, convert estimates into verified facts, or claim
+          academic authority where evidence is unavailable. Where a figure is reported rather
+          than independently verifiable, it is marked as such.
+        </p>
+
+        <h2>Publish with us</h2>
+        <p>
+          This site is also a publishing platform in the service of endangered languages:
+          research, documentation, folklore and educational material in Indus-Kohistani, Shina,
+          Urdu, Arabic or English can be published here after editorial revision and the
+          author's permission — with full, accurate attribution. See
+          <a href="/contribute/"><strong>Publish on this platform</strong></a>.
+        </p>
+
+        <h2>Elsewhere</h2>
+        <ul>
+          <li><a href={LINKS.fikrcdSite} target="_blank" rel="noopener">{FIKRCD.abbrev} website</a></li>
+          <li><a href={LINKS.fikrcdGitHub} target="_blank" rel="noopener">{FIKRCD.abbrev} on GitHub</a></li>
+          <li><a href="/publications/">Publications (verified DOI records)</a></li>
+          <li><a href="/translation/">Translation & localization work</a></li>
+          <li><a href="/projects/">Projects</a></li>
+        </ul>
+
+        <p class="urdu-tagline" lang="ur" dir="rtl">{SITE.taglineUr}</p>
+      </div>
+    </div>
+  </section>
+</Base>

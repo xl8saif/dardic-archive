@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { PROJECTS, DIGITAL_WORK_NOTE } from '../data/professional';
+
+const digital = PROJECTS.filter((p) => p.kind === 'digital');
+
+const capabilities = [
+  { title: 'Multilingual digital publishing', note: 'structured content in five languages with per-script typography' },
+  { title: 'RTL/LTR language systems', note: 'direction-aware layouts, mirroring, mixed-script handling' },
+  { title: 'Urdu typography', note: 'Noto Nastaliq Urdu on the web — line-height, optical size, fallbacks' },
+  { title: 'Arabic-script orthography support', note: 'Extended-A characters (Scheherazade New) for Indus-Kohistani' },
+  { title: 'AI-assisted language workflows', note: 'MTPE-centered translation pipelines with human quality control' },
+  { title: 'Digital preservation', note: 'archives for oral traditions and documentation records' },
+];
+---
+
+<Base title="Digital Language Work — Saif Ullah" description="Language technology: multilingual publishing, RTL/LTR systems, Urdu typography, digital preservation and AI-assisted language workflows.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Digital Language Work</h1>
+      <p class="lede">{DIGITAL_WORK_NOTE}</p>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Capabilities</h2>
+      <div class="content-types">
+        {capabilities.map((c) => (
+          <span class="content-type" style="flex-direction: column; align-items: flex-start; gap: 0.15rem;">
+            <strong>{c.title}</strong>
+            <small class="data-note" style="font-style: normal;">{c.note}</small>
+          </span>
+        ))}
+      </div>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 1.6rem;">Projects</h2>
+      {digital.map((p) => (
+        <article class="card" style="margin-bottom: 0.9rem;">
+          <div class="card-body">
+            <h3 class="card-title" style="margin:0;">{p.name}</h3>
+            <p class="card-desc" style="margin:0.2rem 0 0;">{p.description}</p>
+            <div class="card-meta"><span>{p.languages.join(' · ')} · status: {p.status}</span></div>
+          </div>
+        </article>
+      ))}
+
+      <p class="data-note" style="margin-top: 1.4rem;">
+        A separate “Other Technical Projects” area is deliberately not included: no
+        unrelated software projects are documented in this site’s record.
+      </p>
+    </div>
+  </section>
+</Base>

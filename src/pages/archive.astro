@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { LANGUAGES } from '../data/professional';
+
+const items = (await getCollection('articles', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const years = [...new Set(items.map((i) => String(i.data.pubDate.getFullYear())))].sort().reverse();
+const cats = [...new Set(items.map((i) => i.data.category).filter(Boolean))] as string[];
+const langNames = [...new Set(items.map((i) => LANGUAGES.find((l) => l.code === i.data.lang)?.name ?? i.data.lang))];
+const areas = [...new Set(items.flatMap((i) => i.data.tags))];
+---
+
+<Base title="Archive — Saif Ullah" description="Complete index of published writing — filter by year, language, category and research area.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Archive</h1>
+      <p class="lede">{items.length} published item{items.length === 1 ? '' : 's'} — discovery by year, language, category and research area.</p>
+
+      <div class="filter-row" role="group" aria-label="Filter archive">
+        <button class="filter-chip active" data-filter="all">All</button>
+        {years.map((y) => <button class="filter-chip" data-filter="year" data-value={y}>{y}</button>)}
+        {langNames.map((l) => <button class="filter-chip" data-filter="lang" data-value={l}>{l}</button>)}
+        {cats.map((c) => <button class="filter-chip" data-filter="cat" data-value={c}>{c}</button>)}
+        {areas.map((t) => <button class="filter-chip" data-filter="tag" data-value={t}>#{t}</button>)}
+      </div>
+
+      <div id="archive-list">
+        {items.map((a) => {
+          const lname = LANGUAGES.find((l) => l.code === a.data.lang)?.name ?? a.data.lang;
+          return (
+            <div class="list-row archive-item"
+              data-year={String(a.data.pubDate.getFullYear())}
+              data-lang={lname}
+              data-cat={a.data.category ?? ''}
+              data-tags={a.data.tags.join(' ')}>
+              <time class="date" datetime={a.data.pubDate.toISOString()}>{a.data.pubDate.toISOString().slice(0, 10)}</time>
+              <a href={`/articles/${a.id}/`} lang={a.data.lang}>{a.data.title}</a>
+              <span class="tag">{lname}</span>
+              {a.data.category && <span class="tag">{a.data.category}</span>}
+            </div>
+          );
+        })}
+      </div>
+      <p id="archive-empty" class="empty" hidden>Nothing matches this filter yet.</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>('.filter-chip');
+  const rows = document.querySelectorAll<HTMLElement>('.archive-item');
+  const empty = document.getElementById('archive-empty')!;
+  let active: { kind: string; value: string } | null = null;
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const kind = chip.dataset.filter!;
+      if (kind === 'all') {
+        active = null;
+      } else if (active?.kind === kind && active.value === chip.dataset.value) {
+        active = null; // toggle off
+      } else {
+        active = { kind, value: chip.dataset.value ?? '' };
+      }
+      chips.forEach((c) => c.classList.remove('active'));
+      if (active) chip.classList.add('active');
+      else chips[0]?.classList.add('active');
+
+      let visible = 0;
+      rows.forEach((row) => {
+        const show =
+          !active ||
+          (active.kind === 'year' && row.dataset.year === active.value) ||
+          (active.kind === 'lang' && row.dataset.lang === active.value) ||
+          (active.kind === 'cat' && row.dataset.cat === active.value) ||
+          (active.kind === 'tag' && (row.dataset.tags ?? '').split(' ').includes(active.value));
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      empty.hidden = visible > 0;
+    });
+  });
+</script>

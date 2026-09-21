@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { PROJECTS } from '../data/professional';
+
+const groups = [
+  { kind: 'research', title: 'Research & preservation' },
+  { kind: 'professional', title: 'Professional projects' },
+  { kind: 'digital', title: 'Digital language work' },
+] as const;
+---
+
+<Base title="Projects — Saif Ullah" description="Research, professional and digital language projects — documented, not embellished.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Projects</h1>
+      <p class="lede">
+        Structured records of research, professional and digital work. Scale figures are
+        marked as reported where they come from engagement records rather than
+        independently published sources.
+      </p>
+
+      {groups.map((g) => (
+        <>
+          <h2 style="font-family: var(--font-latin); margin-top: 2.2rem;">{g.title}</h2>
+          {PROJECTS.filter((p) => p.kind === g.kind).map((p) => (
+            <article class="card" style="margin-bottom: 0.9rem;">
+              <div class="card-body">
+                <h3 class="card-title" style="margin:0;">{p.name}</h3>
+                <p class="card-desc" style="margin:0;"><strong>{p.role}</strong>{p.org && ` · ${p.org}`}</p>
+                <p class="card-desc" style="margin:0.2rem 0 0;">{p.description}</p>
+                <ul style="margin:0.4rem 0 0.2rem; padding-inline-start:1.2rem;">
+                  {p.points.map((pt) => <li style="font-size:0.93rem;">{pt}</li>)}
+                </ul>
+                <div class="card-meta">
+                  <span>{p.languages.join(' · ')}</span>
+                  <span>· status: {p.status}</span>
+                  {p.reportedScale && <span class="reported-flag">{p.reportedScale}</span>}
+                  {p.url && <a href={p.url} target="_blank" rel="noopener">live site ↗</a>}
+                  {p.repo && <a href={p.repo} target="_blank" rel="noopener">repository ↗</a>}
+                </div>
+              </div>
+            </article>
+          ))}
+        </>
+      ))}
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BookLanding from '../../components/BookLanding.astro';
+import ChapterView from '../../components/ChapterView.astro';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books', ({ data }) => data.status === 'published');
+  const chapters = await getCollection('chapters', ({ data }) => data.status === 'published');
+
+  const paths: { params: { slug: string }; props: Record<string, unknown> }[] = [];
+
+  for (const book of books) {
+    paths.push({ params: { slug: book.id }, props: { book } });
+
+    const bookChapters = chapters
+      .filter((c) => c.data.book === book.id)
+      .sort((a, b) => a.data.order - b.data.order);
+
+    bookChapters.forEach((chapter, i) => {
+      paths.push({
+        params: { slug: `${book.id}/${chapter.id.split('/').pop()}` },
+        props: {
+          chapter,
+          prev: bookChapters[i - 1] ?? null,
+          next: bookChapters[i + 1] ?? null,
+          book,
+          index: i,
+          total: bookChapters.length,
+        },
+      });
+    });
+  }
+  return paths;
+}
+
+const { slug } = Astro.params;
+const isChapter = (Astro.props as Record<string, unknown>).chapter !== undefined;
+---
+
+{isChapter ? <ChapterView {...Astro.props} /> : <BookLanding {...Astro.props} />}

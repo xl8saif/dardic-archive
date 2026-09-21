@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import { PUBLICATIONS, PUBLICATIONS_NOTE } from '../data/professional';
+---
+
+<Base title="Publications — Saif Ullah" description="Structured publication records with DOI links — verified entries only.">
+  <section class="section">
+    <div class="container" style="max-width: 820px;">
+      <h1 style="font-family: var(--font-latin);">Publications</h1>
+      <p class="lede">
+        A structured record of published work. Each entry carries its DOI, language
+        associations and verification status; the record grows only as metadata is
+        verified against original sources.
+      </p>
+
+      {PUBLICATIONS.map((pub) => (
+        <article class="card" style="margin: 1.4rem 0;">
+          <div class="card-body">
+            <h2 class="card-title" style="margin:0;">{pub.title}</h2>
+            <p class="card-meta" style="margin:0.2rem 0 0.4rem;">
+              {pub.type && <span>{pub.type}</span>}
+              {pub.relatedLanguages && <span>{pub.relatedLanguages.join(' · ')}</span>}
+              {pub.requiresVerification && <span class="reported-flag">details pending verification</span>}
+            </p>
+            <a class="doi-pill" href={`https://doi.org/${pub.doi}`} target="_blank" rel="noopener">
+              DOI {pub.doi}
+            </a>
+          </div>
+        </article>
+      ))}
+
+      <div class="notice">{PUBLICATIONS_NOTE}</div>
+    </div>
+  </section>
+</Base>

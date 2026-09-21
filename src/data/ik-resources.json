@@ -1,0 +1,37 @@
+{
+  "$schema": {
+    "_description": "Indus-Kohistani Translation & Written Resources — authoritative dataset. Add records to `works`; render fields hide automatically when empty. DO NOT invent values.",
+    "status_values": ["Published", "Digitally published", "Unpublished", "In progress", "Archived", "Private/internal"],
+    "kind_values": ["translation", "adaptation", "original", "educational-resource", "language-resource", "publication"],
+    "visibility_values": ["public", "private"],
+    "notes": [
+      "kinds is an array — one work may be translation + publication + educational-resource at once",
+      "authors/translators/editors/reviewers/contributors are arrays of {name, role?} — roles preserved exactly",
+      "dialect is preserved exactly as supplied; never inferred from title or location",
+      "pdfVisibility/private media: private files are never exposed publicly",
+      "titleLang drives RTL/font rendering of the title (en, ur, ar, mvb, scl)"
+    ],
+    "example_record": {
+      "slug": "example-slug",
+      "title": "عنوان",
+      "titleLang": "mvb",
+      "originalTitle": "Original Title",
+      "authors": [{ "name": "Original Author" }],
+      "translators": [{ "name": "Saif Ullah", "role": "translator" }],
+      "originalLanguage": "English",
+      "targetLanguage": "Indus-Kohistani",
+      "translationYear": 2026,
+      "publisher": "Publisher if verified",
+      "status": "Published",
+      "dialect": "Duber-Kandia",
+      "script": "Arabic script (Extended-A)",
+      "orthography": "Established Indus-Kohistani orthography",
+      "kinds": ["translation", "publication"],
+      "subject": "Religious/educational",
+      "relatedProject": "FiKR&CD",
+      "shortDescription": "One-paragraph research-oriented description.",
+      "featured": false
+    }
+  },
+  "works": []
+}

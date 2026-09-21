@@ -1,0 +1,57 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { langInfo } from '../data/site';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  chapter: CollectionEntry<'chapters'>;
+  book: CollectionEntry<'books'>;
+  prev: CollectionEntry<'chapters'> | null;
+  next: CollectionEntry<'chapters'> | null;
+  index: number;
+  total: number;
+}
+
+const { chapter, book, prev, next, index, total } = Astro.props;
+const { title, lang } = chapter.data;
+const info = langInfo(lang);
+const { Content } = await render(chapter);
+---
+
+<Base title={`${title} — ${book.data.title}`} description={`Chapter ${index + 1} of ${book.data.title}.`} lang={lang}>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb">
+          <a href="/books/">Books</a> / <a href={`/books/${book.id}/`} lang={book.data.lang}>{book.data.title}</a>
+        </p>
+        <div dir={info.dir}>
+          <p style="color: var(--ink-faint); margin: 0 0 0.2rem;">Chapter {index + 1} of {total}</p>
+          <h1 lang={lang}>{title}</h1>
+        </div>
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner" lang={lang}>
+        <Content />
+      </div>
+    </div>
+
+    <nav class="section" style="border-top: 1px solid var(--border); background: var(--bg-soft);">
+      <div class="container" style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+        {prev ? (
+          <a class="btn btn-ghost" href={`/books/${book.id}/${prev.id.split('/').pop()}/`}>← {prev.data.title}</a>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <a class="btn btn-primary" href={`/books/${book.id}/${next.id.split('/').pop()}/`}>{next.data.title} →</a>
+        ) : (
+          <a class="btn btn-ghost" href={`/books/${book.id}/`}>Back to table of contents</a>
+        )}
+      </div>
+    </nav>
+  </article>
+</Base>

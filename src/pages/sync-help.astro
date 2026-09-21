@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Drive Sync — How publishing works" description="How articles and books flow from Google Drive to this blog.">
+  <section class="section">
+    <div class="container" style="max-width: 780px;">
+      <h1 style="font-family: var(--font-latin);">How publishing works</h1>
+
+      <div class="notice" style="margin: 1rem 0 2rem;">
+        <strong>Nothing publishes without review.</strong> The pipeline pulls from Drive and prepares
+        drafts; you approve each piece in the local dashboard before it appears here.
+      </div>
+
+      <div class="prose-inner" style="padding:0;">
+        <h2>1 · Put finished work in Drive</h2>
+        <pre style="background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; overflow-x: auto; font-size: 0.85rem;"><code>Blog/
+├── Articles/
+│   ├── English/        ← one file = one article
+│   └── Urdu/
+└── Books/
+    └── My Book Title/
+        ├── 00 - Introduction.docx
+        ├── 01 - The Valley.docx
+        └── cover.jpg</code></pre>
+
+        <h2>2 · Pull from Drive</h2>
+        <p>Run the sync (authenticates in your browser on first run):</p>
+        <pre style="background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-size: 0.9rem;"><code>cd research-blog
+.venv\Scripts\activate
+python sync/pull.py</code></pre>
+
+        <h2>3 · Review drafts</h2>
+        <p>Open the local review dashboard:</p>
+        <pre style="background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-size: 0.9rem;"><code>python sync/review.py   →  http://127.0.0.1:5555</code></pre>
+        <p>
+          Each draft shows its cleaned text, fetched images, detected language/direction and image
+          credits. Click <strong>Approve &amp; Publish</strong> when you're happy, or
+          <strong>Skip</strong> to leave it as a draft (never published).
+        </p>
+
+        <h2>4 · Language tags</h2>
+        <p>
+          The pipeline detects language from the subfolder and the text itself, but you can force it
+          with a filename tag: <code>[en]</code>, <code>[ur]</code>, <code>[ar]</code>,
+          <code>[mvb]</code> (Indus-Kohistani), <code>[scl]</code> (Shina) — e.g.
+          <code>Indus Signals [scl].docx</code>.
+        </p>
+
+        <h2>5 · Publish to the web</h2>
+        <p>
+          Approving commits the post and pushes to GitHub, where Actions builds and deploys the site
+          automatically. You can also publish manually:
+        </p>
+        <pre style="background: var(--bg-soft); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-size: 0.9rem;"><code>npm run build &amp;&amp; git add . &amp;&amp; git commit -m "Publish" &amp;&amp; git push</code></pre>
+      </div>
+    </div>
+  </section>
+</Base>

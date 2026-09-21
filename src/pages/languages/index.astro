@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import { LANGUAGES } from '../../data/professional';
+---
+
+<Base title="Languages — Language profiles" description="Language profiles: Indus-Kohistani, Shina, Urdu and Arabic — documentation status, orthography, typography, research and publications.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Language profiles</h1>
+      <p class="lede">
+        Each profile gathers what is verifiably on this site for a language: documentation
+        status, varieties, writing system, typography, research and publications. Missing
+        facts are left as explicit placeholders rather than filled in.
+      </p>
+      <div class="card-grid" style="margin-top: 1.6rem;">
+        {LANGUAGES.map((l) => (
+          <article class="card">
+            <div class="card-body">
+              <h2 class="card-title" style="margin:0;">
+                <a href={`/languages/${l.name.toLowerCase().replace(/ /g, '-')}/`}>{l.name}</a>
+                {l.native && <span class="lang-badge" style="margin-inline-start:0.4rem;">{l.native}</span>}
+              </h2>
+              <p class="card-desc">{l.tagline}</p>
+              <div class="card-meta">
+                {l.dialects && <span>{l.dialects.length} dialect areas</span>}
+                {l.orthography && <span>· orthography table</span>}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

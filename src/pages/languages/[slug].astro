@@ -1,0 +1,136 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { LANGUAGES, DIALECT_NOTE } from '../../data/professional';
+
+export function getStaticPaths() {
+  return LANGUAGES.map((l) => ({ params: { slug: l.name.toLowerCase().replace(/ /g, '-') }, props: { profile: l } }));
+}
+
+const { profile } = Astro.props;
+const info = profile;
+
+const articles = (await getCollection('articles', ({ data }) => data.status === 'published'))
+  .filter((a) => a.data.relatedLanguages.includes(info.name) || a.data.lang === info.code)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const { PUBLICATIONS } = await import('../../data/professional');
+const pubs = PUBLICATIONS.filter((p) => p.relatedLanguages?.includes(info.name));
+---
+
+<Base title={`${info.name} — Language profile`} description={info.tagline}>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb"><a href="/languages/">Languages</a> / <span>{info.name}</span></p>
+        <div dir={info.dir}>
+          <h1 lang={info.code}>{info.name}{info.native ? ` · ${info.native}` : ''}</h1>
+        </div>
+        <p class="lede">{info.tagline}</p>
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner">
+        <h2>Overview</h2>
+        <p dir={info.dir} lang={info.code === 'en' ? undefined : info.code}>{info.sections.overview}</p>
+
+        <h2>Documentation status</h2>
+        <p class="data-note">{info.sections.status}</p>
+
+        {info.dialects && (
+          <>
+            <h2>Dialects / varieties</h2>
+            <ul>
+              {info.dialects.map((d) => (
+                <li>
+                  <strong>{d.name}</strong> —{' '}
+                  {d.documented ? (
+                    <span>documentation records available on this site</span>
+                  ) : (
+                    <span class="data-note">documentation record in preparation</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p class="data-note">{DIALECT_NOTE}</p>
+          </>
+        )}
+
+        {info.orthography && (
+          <>
+            <h2>Writing system & orthography</h2>
+            <table class="char-table">
+              <thead><tr><th>Character</th><th>Unicode</th><th>Status</th></tr></thead>
+              <tbody>
+                {info.orthography.map((o) => (
+                  <tr>
+                    <td class="char-glyph" lang={info.code}>{o.char}</td>
+                    <td><code>{o.codepoint}</code></td>
+                    <td class="data-note">{o.usage}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {info.figure && (
+          <figure class="article-cover cover-uncropped" style="margin-top: 1.6rem;">
+            <img src={info.figure.src} alt={info.figure.alt} loading="lazy" />
+            <figcaption>
+              {info.figure.caption}
+              <span class="data-note" style="display:block; margin-top:0.2rem;">Source: {info.figure.credit}</span>
+            </figcaption>
+          </figure>
+        )}
+
+        <h2>Typography on this site</h2>
+        <div class="tag-row">{info.typography.map((t) => <span class="tag">{t}</span>)}</div>
+
+        {info.professionalRole && (
+          <>
+            <h2>Professional work in {info.name}</h2>
+            <p>{info.professionalRole} See <a href="/translation/">Translation & Localization</a>.</p>
+          </>
+        )}
+
+        {info.code === 'mvb' && (
+          <>
+            <h2>Translation &amp; written resources</h2>
+            <p>
+              A research archive of written-resource production in {info.name} — translations,
+              literary and educational works, language/grammar resources and publication —
+              a substantive part of the documentation and preservation portfolio:
+              <a href="/research/indus-kohistani-resources/"><strong>Indus-Kohistani Translation &amp; Written Resources</strong></a>.
+            </p>
+          </>
+        )}
+
+        <h2>Research & writing</h2>
+        {articles.length === 0 ? (
+          <p class="data-note">Published items in or about {info.name} will appear here as the archive grows.</p>
+        ) : (
+          <ul>
+            {articles.map((a) => (
+              <li><a href={`/articles/${a.id}/`} lang={a.data.lang}>{a.data.title}</a></li>
+            ))}
+          </ul>
+        )}
+
+        {pubs.length > 0 && (
+          <>
+            <h2>Publications</h2>
+            <ul>
+              {pubs.map((p) => (
+                <li>
+                  {p.title} — <a href={`https://doi.org/${p.doi}`}>DOI {p.doi}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
+    </div>
+  </article>
+</Base>

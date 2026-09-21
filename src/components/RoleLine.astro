@@ -1,0 +1,26 @@
+---
+import { hasValue } from '../data/ikResources';
+
+interface Props {
+  label: string;
+  people?: { name: string; role?: string }[];
+}
+
+const { label, people } = Astro.props;
+const show = hasValue(people);
+---
+
+{
+  show && (
+    <p style="margin:0.2rem 0;">
+      <strong>{label}:</strong>{' '}
+      {people!.map((p, i) => (
+        <>
+          {i > 0 && ', '}
+          {p.name}
+          {p.role && <span class="data-note"> ({p.role})</span>}
+        </>
+      ))}
+    </p>
+  )
+}

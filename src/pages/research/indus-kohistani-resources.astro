@@ -1,0 +1,275 @@
+---
+import Base from '../../layouts/Base.astro';
+import {
+  IK_RESOURCES,
+  IK_RESOURCE_CATEGORIES,
+  WORK_KIND_LABELS,
+  workKindLabel,
+  hasValue,
+} from '../../data/ikResources';
+
+const works = IK_RESOURCES;
+const featured = works.filter((w) => w.featured).slice(0, 3);
+
+const years = [...new Set(works.map((w) => w.translationYear ?? w.publicationYear).filter(Boolean) as number[])].sort();
+const dialects = [...new Set(works.map((w) => w.dialect).filter(hasValue))];
+const statuses = [...new Set(works.map((w) => w.status))];
+const subjects = [...new Set(works.map((w) => w.subject).filter(hasValue))];
+const people = [
+  ...new Set(
+    works.flatMap((w) => [...(w.authors ?? []), ...(w.translators ?? [])].map((p) => p.name))
+  ),
+];
+
+const PURPOSES = [
+  'expansion of written resources in Indus-Kohistani',
+  'development of terminology for modern and educational use',
+  'strengthening of literacy resources for learners and readers',
+  'preservation of cultural and linguistic knowledge in written form',
+  'support for intergenerational transmission of the language',
+  'availability of educational and literary material in the language',
+  'digital representation of Indus-Kohistani through consistent orthography',
+];
+---
+
+<Base
+  title="Indus-Kohistani Translation & Written Resources — Saif Ullah"
+  description="A research archive of written-resource production in Indus-Kohistani: translation, literary and educational works, language resources, publication and orthographic work."
+>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb">
+          <a href="/research/">Research</a> / <a href="/languages/indus-kohistani/">Indus-Kohistani</a> /
+          <span>Translation &amp; Written Resources</span>
+        </p>
+        <h1>Indus-Kohistani Translation &amp; Written Resources</h1>
+        <div class="meta">
+          <span>A research &amp; documentation archive</span>
+          {works.length > 0 && <span>· {works.length} record{works.length === 1 ? '' : 's'}</span>}
+        </div>
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner">
+        <p>
+          This collection documents concrete production of written resources in Indus-Kohistani:
+          translation, literary and religious/educational translation, adaptation, terminology
+          development, grammar and language resources, children's and educational material,
+          publication, linguistic review and orthographic work. It is presented as a research
+          archive — not as a portfolio of translation jobs.
+        </p>
+        <p>
+          Translation into Indus-Kohistani can contribute to:
+        </p>
+        <ul>
+          {PURPOSES.map((p) => <li>{p}</li>)}
+        </ul>
+        <p class="data-note">
+          These are the purposes and functions of the work; no academic impact claims are made here.
+        </p>
+
+        <h2>Related pages</h2>
+        <ul>
+          <li><a href="/languages/indus-kohistani/">Indus-Kohistani — language profile</a> (dialects, orthography, documentation status)</li>
+          <li><a href="/fikrcd/">FiKR&amp;CD</a> — the research forum under which much of this work is carried out</li>
+          <li><a href="/folklore/">Folklore &amp; Oral Traditions</a> — related spoken-form material</li>
+          <li><a href="/publications/">Publications</a> — verified DOI publication records</li>
+        </ul>
+
+        {featured.length > 0 && (
+          <>
+            <h2>Featured works</h2>
+            <p class="data-note">
+              A small selection; the complete catalogue follows. Inclusion here reflects editorial
+              choice only, not academic ranking.
+            </p>
+            {featured.map((w) => (
+              <article class="card" style="margin-bottom: 0.9rem;">
+                <div class="card-body">
+                  <h3 class="card-title" style="margin:0;">
+                    <a href={`/research/indus-kohistani-resources/${w.slug}/`} lang={w.titleLang ?? 'en'}>{w.title}</a>
+                  </h3>
+                  <p class="card-meta" style="margin:0.2rem 0 0;">{workKindLabel(w.kinds)}{w.dialect ? ` · ${w.dialect}` : ''}{(w.translationYear ?? w.publicationYear) ? ` · ${w.translationYear ?? w.publicationYear}` : ''}</p>
+                </div>
+              </article>
+            ))}
+          </>
+        )}
+
+        <h2 id="catalogue">The catalogue</h2>
+        <p class="data-note">
+          Records display only the fields that exist for each work; unavailable information is
+          omitted rather than shown as placeholders.
+        </p>
+
+        {works.length === 0 ? (
+          <div class="notice">
+            <strong>In preparation.</strong> The dataset for this collection — more than ten works
+            spanning translation, adaptation, educational material, language resources and
+            publication — is being prepared for publication here. Individual records will appear
+            with their bibliographic, linguistic and evidence details as they are verified.
+            Nothing is pre-filled or estimated.
+          </div>
+        ) : (
+          <>
+            <div class="filter-row" role="search" aria-label="Filter the collection">
+              <input
+                type="search"
+                id="ikr-search"
+                placeholder="Search title or author…"
+                aria-label="Search by title or author"
+                style="flex:1; min-width:200px; padding:0.4rem 0.8rem; border:1px solid var(--border); border-radius:999px; font:inherit;"
+              />
+            </div>
+
+            <div class="filter-row" role="group" aria-label="Filter by category">
+              {IK_RESOURCE_CATEGORIES.map((c, i) => (
+                <button class={`filter-chip cat-chip ${i === 0 ? 'active' : ''}`} data-cat={c.id} data-kinds={c.kinds.join(',')}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
+            <div class="filter-row" role="group" aria-label="Refine filters">
+              {dialects.length > 0 && (
+                <select class="filter-chip" id="ikr-dialect" aria-label="Filter by dialect">
+                  <option value="">Dialect: all</option>
+                  {dialects.map((d) => <option value={d}>{d}</option>)}
+                </select>
+              )}
+              {years.length > 0 && (
+                <select class="filter-chip" id="ikr-year" aria-label="Filter by year">
+                  <option value="">Year: all</option>
+                  {years.map((y) => <option value={y}>{y}</option>)}
+                </select>
+              )}
+              {subjects.length > 0 && (
+                <select class="filter-chip" id="ikr-subject" aria-label="Filter by subject">
+                  <option value="">Subject: all</option>
+                  {subjects.map((s) => <option value={s}>{s}</option>)}
+                </select>
+              )}
+              {statuses.length > 0 && (
+                <select class="filter-chip" id="ikr-status" aria-label="Filter by publication status">
+                  <option value="">Status: all</option>
+                  {statuses.map((s) => <option value={s}>{s}</option>)}
+                </select>
+              )}
+              {people.length > 0 && (
+                <select class="filter-chip" id="ikr-person" aria-label="Filter by author or translator">
+                  <option value="">Person: all</option>
+                  {people.map((p) => <option value={p}>{p}</option>)}
+                </select>
+              )}
+            </div>
+
+            <div id="ikr-list">
+              {works.map((w) => (
+                <article
+                  class="list-row ikr-item"
+                  data-kinds={w.kinds.join(',')}
+                  data-dialect={w.dialect ?? ''}
+                  data-year={String(w.translationYear ?? w.publicationYear ?? '')}
+                  data-subject={w.subject ?? ''}
+                  data-status={w.status}
+                  data-people={(w.authors ?? []).concat(w.translators ?? []).map((p) => p.name).join('|')}
+                  data-search={`${w.title} ${(w.originalTitle ?? '')} ${(w.authors ?? []).map((a) => a.name).join(' ')} ${(w.translators ?? []).map((t) => t.name).join(' ')}`.toLowerCase()}
+                >
+                  <div style="flex:1; min-width:0;">
+                    <a href={`/research/indus-kohistani-resources/${w.slug}/`} lang={w.titleLang ?? 'en'} style="font-weight:600;">{w.title}</a>
+                    <div class="card-meta" style="margin-top:0.15rem;">
+                      <span>{workKindLabel(w.kinds)}</span>
+                      {w.dialect && <span>· {w.dialect}</span>}
+                      {(w.translationYear ?? w.publicationYear) && <span>· {w.translationYear ?? w.publicationYear}</span>}
+                      <span>· {w.status}</span>
+                      {w.translators && w.translators.length > 0 && (
+                        <span>· tr. {(w.translators ?? []).map((t) => t.name).join(', ')}</span>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p id="ikr-empty" class="empty" hidden>No works match the current filters.</p>
+
+            {years.length > 0 && (
+              <>
+                <h2 id="timeline">Timeline</h2>
+                <p class="data-note">Chronological view of dated works (translation or publication year, as recorded).</p>
+                <ul>
+                  {years.map((y) => (
+                    <li>
+                      <strong>{y}</strong> —{' '}
+                      {works
+                        .filter((w) => (w.translationYear ?? w.publicationYear) === y)
+                        .map((w, i, arr) => (
+                          <>
+                            <a href={`/research/indus-kohistani-resources/${w.slug}/`} lang={w.titleLang ?? 'en'}>{w.title}</a>
+                            {i < arr.length - 1 && ' · '}
+                          </>
+                        ))}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  </article>
+
+  <script>
+    const search = document.getElementById('ikr-search') as HTMLInputElement | null;
+    const catChips = document.querySelectorAll<HTMLButtonElement>('.cat-chip');
+    const dialect = document.getElementById('ikr-dialect') as HTMLSelectElement | null;
+    const year = document.getElementById('ikr-year') as HTMLSelectElement | null;
+    const subject = document.getElementById('ikr-subject') as HTMLSelectElement | null;
+    const status = document.getElementById('ikr-status') as HTMLSelectElement | null;
+    const person = document.getElementById('ikr-person') as HTMLSelectElement | null;
+    const items = document.querySelectorAll<HTMLElement>('.ikr-item');
+    const empty = document.getElementById('ikr-empty');
+
+    let activeCat: string[] | null = null;
+
+    function apply() {
+      const q = search?.value.trim().toLowerCase() ?? '';
+      const d = dialect?.value ?? '';
+      const y = year?.value ?? '';
+      const s = subject?.value ?? '';
+      const st = status?.value ?? '';
+      const p = person?.value ?? '';
+      let visible = 0;
+
+      items.forEach((item) => {
+        const kinds = (item.dataset.kinds ?? '').split(',');
+        const show =
+          (!activeCat || kinds.some((k) => activeCat!.includes(k))) &&
+          (!d || item.dataset.dialect === d) &&
+          (!y || item.dataset.year === y) &&
+          (!s || item.dataset.subject === s) &&
+          (!st || item.dataset.status === st) &&
+          (!p || (item.dataset.people ?? '').split('|').includes(p)) &&
+          (!q || (item.dataset.search ?? '').includes(q));
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      if (empty) empty.hidden = visible > 0;
+    }
+
+    catChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        catChips.forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeCat = chip.dataset.cat === 'all' ? null : (chip.dataset.kinds ?? '').split(',');
+        apply();
+      });
+    });
+    [search, dialect, year, subject, status, person].forEach((el) => {
+      el?.addEventListener('input', apply);
+      el?.addEventListener('change', apply);
+    });
+  </script>
+</Base>

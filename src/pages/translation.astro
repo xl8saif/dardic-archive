@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import { PROJECTS } from '../data/professional';
+
+const pairs = [
+  'Arabic ↔ Urdu', 'Arabic ↔ English', 'Urdu ↔ English',
+  'Persian ↔ English/Urdu', 'Indus-Kohistani ↔ Urdu/English', 'Shina ↔ Urdu/English',
+];
+
+const categories = [
+  'Translation', 'Localization', 'MTPE', 'LQA', 'Multilingual QA',
+  'Gaming', 'Apps', 'SaaS', 'Technical', 'Legal', 'Religious',
+  'Government', 'Corporate', 'Educational', 'Media',
+];
+
+const professional = PROJECTS.filter((p) => p.kind === 'professional');
+---
+
+<Base title="Translation & Localization — Saif Ullah" description="Professional translation and localization: Arabic↔Urdu, Arabic↔English, Persian, gaming, MTPE, LQA, legal, religious and government domains.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Translation & Localization</h1>
+      <p class="lede">
+        The profession side of this archive. Experience documented in the project record
+        spans game, speech-technology, government and religious domains — the scale of a
+        dozen years of practice, with figures marked as reported.
+      </p>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Working categories</h2>
+      <div class="tag-row">
+        {categories.map((c) => <span class="tag">{c}</span>)}
+      </div>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Language combinations</h2>
+      <div class="tag-row">
+        {pairs.map((x) => <span class="tag">{x}</span>)}
+      </div>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Documented projects</h2>
+      {professional.map((p) => (
+        <article class="card" style="margin-bottom: 0.9rem;">
+          <div class="card-body">
+            <h3 class="card-title" style="margin:0;">{p.name}</h3>
+            <p class="card-desc" style="margin:0;"><strong>{p.role}</strong>{p.org && ` · ${p.org}`}</p>
+            <p class="card-desc" style="margin:0.2rem 0 0;">{p.description}</p>
+            <div class="card-meta">
+              <span>{p.languages.join(' · ')}</span>
+              {p.reportedScale && <span class="reported-flag">{p.reportedScale}</span>}
+            </div>
+          </div>
+        </article>
+      ))}
+
+      <p class="data-note" style="margin-top: 1.4rem;">
+        MTPE — machine-translation post-editing · LQA — language quality assurance.
+        Client identifiers appear exactly as documented in the project record; no
+        additional clients or titles are implied.
+      </p>
+
+      <div class="notice" style="margin-top: 1.4rem;">
+        <strong>Distinct from this section:</strong> written-resource production <em>into</em>
+        Indus-Kohistani — translations, adaptations, educational and language resources — is part
+        of the research and preservation portfolio, not commercial localization — see the
+        <a href="/research/indus-kohistani-resources/"><strong>Indus-Kohistani Translation &amp; Written Resources</strong></a> archive.
+      </div>
+    </div>
+  </section>
+</Base>

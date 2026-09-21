@@ -1,0 +1,42 @@
+# Research blog sync configuration
+# ------------------------------------------------------------------
+# Everything the Drive pipeline needs. Secrets do NOT live here:
+# client_secret.json and the Pixabay key (in .env) are gitignored.
+
+drive:
+  # Root folder in your Google Drive (by exact name).
+  root: "Blog"
+  articles: "Articles"       # subfolders of this = language groups
+  books: "Books"             # each subfolder = one book (chapters inside)
+  # Cache of file ids we have already converted (updated each run).
+  cache: "sync/.cache.yaml"
+
+paths:
+  articles_out: "src/content/articles"
+  books_out: "src/content/books"
+  # Served verbatim by Astro (must be under public/ for /assets-sync/ URLs)
+  assets_out: "public/assets-sync"
+  report: "sync/pull-report.md"
+
+images:
+  # Pixabay key lives in research-blog/.env as PIXABAY_KEY=...
+  # (get a free key at https://pixabay.com/api/docs/)
+  provider_order: ["pixabay", "openverse"]
+  max_per_post: 3          # in-body images placed after major headings
+  per_page: 12
+  safe_search: true
+
+languages:
+  # Subfolder name (lowercased) -> language code + script hints.
+  # Filename tags like [ur], [en], [scl] always override these.
+  folders:
+    english: en
+    urdu: ur
+    arabic: ar
+    kohistani: mvb
+    indus-kohistani: mvb
+    shina: scl
+  filename_tags: [en, ur, ar, mvb, scl]
+
+review:
+  port: 5555

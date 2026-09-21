@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { LANGUAGES } from '../../data/site';
+
+const langFilter = Astro.params.lang;
+const all = (await getCollection('articles', ({ data }) => data.status === 'published'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const articles = langFilter && langFilter !== 'all'
+  ? all.filter((a) => a.data.lang === langFilter)
+  : all;
+
+const current = langFilter && LANGUAGES[langFilter] ? LANGUAGES[langFilter] : undefined;
+---
+
+<Base title={current ? `Articles in ${current.name}` : 'All articles'} description="All published research articles and columns.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>{current ? `Articles in ${current.native}` : 'All articles'}</h2>
+        <span>{articles.length} published</span>
+      </div>
+
+      <div class="filter-bar">
+        <a class={`chip ${!langFilter || langFilter === 'all' ? 'active' : ''}`} href="/articles/">All languages</a>
+        {Object.entries(LANGUAGES).map(([code, info]) => (
+          <a
+            class={`chip ${langFilter === code ? 'active' : ''}`}
+            href={`/articles/lang/${code}/`}
+          >
+            {info.native} ({all.filter((a) => a.data.lang === code).length})
+          </a>
+        ))}
+      </div>
+
+      {articles.length === 0 ? (
+        <p class="empty">Nothing published in this language yet.</p>
+      ) : (
+        <div class="card-grid">
+          {articles.map((a) => <ArticleCard article={a} />)}
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

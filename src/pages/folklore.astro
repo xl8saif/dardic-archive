@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const items = (await getCollection('articles', ({ data }) => data.status === 'published'))
+  .filter((a) =>
+    a.data.category === 'Documentation' ||
+    a.data.tags.some((t) => ['folklore', 'oral-tradition', 'oral traditions'].includes(t.toLowerCase())))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Base title="Folklore & Oral Traditions — Saif Ullah" description="Folklore, oral traditions, cultural memory and field documentation from the Indus Kohistan — original language material with translations.">
+  <section class="section">
+    <div class="container">
+      <h1 style="font-family: var(--font-latin);">Folklore & Oral Traditions</h1>
+      <p class="lede">
+        A dedicated home for stories, laments, cultural memory and field documentation.
+        Material appears in its original language wherever possible, with translations
+        presented separately from the source text.
+      </p>
+
+      {items.length === 0 ? (
+        <div class="notice" style="margin-top: 1.6rem;">
+          <strong>In preparation.</strong> Documented material from FiKR&CD fieldwork —
+          tales, laments and traditional knowledge from the Indus-Kohistani dialect areas —
+          will be published here as it is reviewed, with original-language text, transliteration
+          and translation kept distinct. Nothing is pre-published without verification.
+        </div>
+      ) : (
+        <div style="margin-top: 1.2rem;">
+          {items.map((a) => (
+            <div class="list-row">
+              <time class="date" datetime={a.data.pubDate.toISOString()}>{a.data.pubDate.toISOString().slice(0, 10)}</time>
+              <a href={`/articles/${a.id}/`} lang={a.data.lang}>{a.data.title}</a>
+              <span class="tag">{a.data.lang}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Base>

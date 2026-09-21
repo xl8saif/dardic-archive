@@ -1,0 +1,170 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { langInfo, formatDate, SITE } from '../../data/site';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', ({ data }) => data.status === 'published');
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article },
+  }));
+}
+
+import { t } from '../../i18n/ui';
+
+const { article } = Astro.props;
+const { title, description, pubDate, updatedDate, lang, cover, coverCredit, tags,
+        category, translations, originalLang, translationOf, relatedLanguages,
+        relatedProjects, references, doi, metaTitle, metaDescription } = article.data;
+const info = langInfo(lang);
+const { Content } = await render(article);
+const T = t(lang); // article-language chrome (en/ar/ur; others fall back to en)
+
+const siteUrl = Astro.site ?? new URL('http://localhost:4321');
+const all = await getCollection('articles', ({ data }) => data.status === 'published');
+const langVersions = translations
+  .map((t) => all.find((a) => a.id === t))
+  .filter(Boolean) as typeof all[];
+const original = translationOf ? all.find((a) => a.id === translationOf) : undefined;
+
+const related = all
+  .filter((a) => a.id !== article.id && a.data.lang === lang)
+  .slice(0, 3);
+
+const articleJsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description: metaDescription ?? description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  inLanguage: lang,
+  author: { '@type': 'Person', name: SITE.author, url: siteUrl.href },
+  ...(doi ? { identifier: `https://doi.org/${doi}` } : {}),
+  mainEntityOfPage: new URL(`/articles/${article.id}/`, siteUrl).href,
+});
+---
+
+<Base
+  title={metaTitle ?? title}
+  description={metaDescription ?? (description || title)}
+  lang={lang}
+  structuredData={articleJsonLd}
+>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb">
+          <a href="/articles/">Articles</a>
+          {category && <span> / {category}</span>}
+          <span> / {info.native}</span>
+        </p>
+        {original && (
+          <p class="data-note">
+            {T.a_original} <a href={`/articles/${original.id}/`} lang={original.data.lang}>{original.data.title}</a>
+          </p>
+        )}
+        <div dir={info.dir}>
+          <h1 lang={lang}>{title}</h1>
+        </div>
+        <div class="meta" dir={info.dir}>
+          <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
+          {updatedDate && <span>· {T.a_updated} {formatDate(updatedDate, lang)}</span>}
+          <span>· {SITE.author}</span>
+        </div>
+        {tags.length > 0 && (
+          <div class="tag-row" style="margin-top:0.8rem;">
+            {tags.map((t) => <a class="tag" href={`/archive/`}>#{t}</a>)}
+          </div>
+        )}
+        {langVersions.length > 0 && (
+          <div class="filter-row" aria-label="Language versions">
+            <span class="data-note" style="margin-inline-end:0.3rem;">Versions:</span>
+            {langVersions.map((v) => (
+              <a class={`filter-chip ${v.data.lang === lang ? 'active' : ''}`}
+                 href={`/articles/${v.id}/`} lang={v.data.lang} hreflang={v.data.lang}>
+                {langInfo(v.data.lang).native}
+              </a>
+            ))}
+          </div>
+        )}
+        {cover && (
+          <figure class="article-cover">
+            <img src={cover} alt="" />
+            {coverCredit && <figcaption>Photo: {coverCredit} (free license)</figcaption>}
+          </figure>
+        )}
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner" lang={lang}>
+        <nav id="toc" class="toc" hidden aria-label="Table of contents">
+          <strong>{T.contents}</strong>
+          <ul id="toc-list"></ul>
+        </nav>
+        <Content />
+      </div>
+    </div>
+
+    {(references.length > 0 || doi) && (
+      <section class="section" style="border-top: 1px solid var(--border);">
+        <div class="container" style="max-width: 780px;">
+          <h2 style="font-family: var(--font-latin);">{T.references}</h2>
+          <ul>
+            {doi && <li><a href={`https://doi.org/${doi}`} rel="noopener">DOI: {doi}</a></li>}
+            {references.map((r) => (
+              <li>
+                {r.url
+                  ? <a href={r.url} target="_blank" rel="noopener">{r.label}</a>
+                  : r.doi
+                    ? <a href={`https://doi.org/${r.doi}`} target="_blank" rel="noopener">{r.label} — DOI {r.doi}</a>
+                    : r.label}
+              </li>
+            ))}
+          </ul>
+          {(relatedLanguages.length > 0 || relatedProjects.length > 0) && (
+            <p class="data-note">
+              {relatedLanguages.length > 0 && <>Related languages: {relatedLanguages.join(', ')}.</>}
+              {relatedProjects.length > 0 && <> Related projects: {relatedProjects.join(', ')}.</>}
+            </p>
+          )}
+        </div>
+      </section>
+    )}
+
+    {related.length > 0 && (
+      <section class="section" style="border-top: 1px solid var(--border); background: var(--bg-soft);">
+        <div class="container">
+          <div class="section-head"><h2>More in {info.native}</h2></div>
+          <div class="card-grid">{related.map((a) => <ArticleCard article={a} />)}</div>
+        </div>
+      </section>
+    )}
+  </article>
+
+  <script>
+    const headings = Array.from(
+      document.querySelectorAll<HTMLElement>('.prose-inner h2')
+    );
+    if (headings.length >= 2) {
+      const toc = document.getElementById('toc');
+      const list = document.getElementById('toc-list');
+      if (toc && list) {
+        headings.forEach((h, i) => {
+          const id = `section-${i + 1}`;
+          h.id = id;
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = `#${id}`;
+          a.textContent = h.textContent ?? '';
+          li.append(a);
+          list.append(li);
+        });
+        toc.hidden = false;
+      }
+    }
+  </script>
+</Base>

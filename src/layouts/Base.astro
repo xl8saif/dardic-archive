@@ -1,0 +1,188 @@
+---
+import '../styles/global.css';
+import { SITE, langInfo } from '../data/site';
+import { t, LOCALES, type Locale } from '../i18n/ui';
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: string;
+  /** JSON-LD script content (already stringified) */
+  structuredData?: string;
+  /** Alternate-locale paths for hreflang, e.g. { ar: '/ar/', ur: '/ur/' } */
+  alternates?: Record<string, string>;
+}
+
+const {
+  title,
+  description = SITE.tagline,
+  lang = 'en',
+  structuredData,
+  alternates,
+} = Astro.props;
+
+/** Chrome language: falls back to English for non-en/ar/ur content pages */
+const locale: Locale = lang === 'ar' || lang === 'ur' ? lang : 'en';
+const T = t(locale);
+const info = langInfo(lang);
+const dir = info.dir;
+
+const arabicScript = dir === 'rtl' && info.font !== 'nastaliq';
+const htmlClass = [
+  dir === 'rtl' ? 'rtl-page' : '',
+  dir === 'rtl' && info.font === 'nastaliq' ? 'nastaliq' : '',
+  dir === 'rtl' && info.font === 'scheherazade' ? 'scheherazade' : '',
+  arabicScript ? 'arabic-script' : '',
+]
+  .filter(Boolean)
+  .join(' ');
+
+const siteUrl = Astro.site ?? new URL('http://localhost:4321');
+const canonical = new URL(Astro.url.pathname, siteUrl).href;
+const ogImage = new URL('/images/saif-ullah-portrait.jpg', siteUrl).href;
+const ogLocale = lang === 'ur' ? 'ur_PK' : lang === 'ar' ? 'ar' : 'en';
+
+/** Switcher targets: explicit alternates, else the locale homepages */
+const switchTargets = LOCALES.map((l) => ({
+  ...l,
+  href: alternates?.[l.code] ?? l.path,
+}));
+
+const defaultJsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Saif Ullah',
+  url: siteUrl.href,
+  jobTitle: 'Translator & Localization Specialist; Language Researcher',
+  description:
+    'Language researcher and preservation advocate (Indus-Kohistani, Shina) and translation & localization specialist (Arabic, Urdu, Persian, English).',
+  address: { '@type': 'PostalAddress', addressRegion: 'Gilgit-Baltistan', addressCountry: 'PK' },
+});
+---
+
+<!doctype html>
+<html lang={lang} dir={dir} class={htmlClass}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {switchTargets.map((s) => (
+      <link rel="alternate" hreflang={s.code === 'en' ? 'x-default' : s.code} href={new URL(s.href, siteUrl).href} />
+    ))}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={T.site_title} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <script type="application/ld+json" set:html={structuredData ?? defaultJsonLd} />
+
+    <!-- Self-hosted fonts: Noto Nastaliq Urdu, Amiri, Scheherazade New, Inter -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-nastaliq-urdu@5/400.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-nastaliq-urdu@5/700.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/amiri@5/400.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/amiri@5/700.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-naskh-arabic@5/400.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/scheherazade-new@5/400.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/scheherazade-new@5/700.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/400.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5/500.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{T.skip}</a>
+
+    <header class="site-header">
+      <div class="container">
+        <a href="/" class="brand">
+          <span class="mark">د</span>
+          <span>
+            {T.site_title}
+            <small>{T.site_tagline}</small>
+          </span>
+        </a>
+        <nav class="site-nav" aria-label="Main">
+          <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>{T.nav_home}</a>
+          <a href="/research/" aria-current={Astro.url.pathname.startsWith('/research') ? 'page' : undefined}>{T.nav_research}</a>
+          <div class="nav-drop">
+            <button class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">{T.nav_languages}</button>
+            <div class="nav-menu">
+              <a href="/languages/indus-kohistani/">Indus-Kohistani</a>
+              <a href="/research/indus-kohistani-resources/">{T.dd_work_ikres}</a>
+              <a href="/languages/shina/">Shina</a>
+              <a href="/languages/urdu/">{T.lang_urdu}</a>
+              <a href="/languages/arabic/">{T.lang_arabic}</a>
+              <a href="/languages/"><strong>{T.dd_lang_all}</strong></a>
+            </div>
+          </div>
+          <a href="/publications/" aria-current={Astro.url.pathname.startsWith('/publications') ? 'page' : undefined}>{T.nav_publications}</a>
+          <div class="nav-drop">
+            <button class="nav-drop-btn" aria-expanded="false" aria-haspopup="true">{T.nav_work}</button>
+            <div class="nav-menu">
+              <a href="/translation/">{T.dd_work_translation}</a>
+              <a href="/projects/">{T.dd_work_projects}</a>
+              <a href="/digital/">{T.dd_work_digital}</a>
+              <a href="/fikrcd/">FiKR&CD</a>
+            </div>
+          </div>
+          <a href="/archive/" aria-current={Astro.url.pathname.startsWith('/archive') ? 'page' : undefined}>{T.nav_archive}</a>
+          <a class="nav-cta" href="/contribute/">{T.nav_publish}</a>
+          <a href="/about/">{T.nav_about}</a>
+        </nav>
+        <div class="locale-switch" aria-label="Site language">
+          {switchTargets.map((s) => (
+            <a
+              href={s.href}
+              lang={s.code}
+              hreflang={s.code}
+              class={s.code === locale ? 'active' : ''}
+              aria-current={s.code === locale ? 'true' : undefined}
+            >{s.label}</a>
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>© {new Date().getFullYear()} {SITE.author} · {T.site_title}</span>
+        <span>
+          <a href="/articles/">{T.footer_writing}</a> · <a href="/archive/">{T.footer_archive}</a> ·
+          <a href="/contribute/">{T.footer_publish}</a> · <a href="/sync-help/">{T.footer_workflow}</a> · <a href="/rss.xml">RSS</a>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      for (const btn of document.querySelectorAll<HTMLButtonElement>('.nav-drop-btn')) {
+        const wrap = btn.parentElement!;
+        btn.addEventListener('click', () => {
+          const open = wrap.classList.toggle('open');
+          btn.setAttribute('aria-expanded', String(open));
+        });
+        document.addEventListener('click', (e) => {
+          if (!wrap.contains(e.target as Node) && wrap.classList.contains('open')) {
+            wrap.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

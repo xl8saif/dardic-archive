@@ -1,0 +1,13 @@
+---
+import { hasValue } from '../data/ikResources';
+
+interface Props {
+  label: string;
+  value: unknown;
+}
+
+const { label, value } = Astro.props;
+const show = hasValue(value);
+---
+
+{show && <p style="margin:0.2rem 0;"><strong>{label}:</strong> {value as string}</p>}

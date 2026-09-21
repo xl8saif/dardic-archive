@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { langInfo, formatDate, SITE } from '../data/site';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  book: CollectionEntry<'books'>;
+}
+
+const { book } = Astro.props;
+const { title, description, lang, cover, tags, pubDate } = book.data;
+const info = langInfo(lang);
+
+const chapters = (
+  await getCollection('chapters', ({ data }) => data.status === 'published' && data.book === book.id)
+).sort((a, b) => a.data.order - b.data.order);
+
+const firstChapter = chapters[0];
+---
+
+<Base title={title} description={description || title} lang={lang}>
+  <section class="section">
+    <div class="container">
+      <p class="crumb" style="color: var(--ink-faint); font-size: 0.88rem;">
+        <a href="/books/">Books</a> / <span>{info.native}</span>
+      </p>
+      <div style="display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 2rem; align-items: start;">
+        <div class={`card-media ${info.dir === 'rtl' ? 'rtl-cover' : ''}`} style="aspect-ratio: 2/3; border-radius: 10px; box-shadow: 0 10px 26px rgba(35,30,20,0.18);">
+          {cover ? <img src={cover} alt={`Cover of ${title}`} /> : <span style="font-size:3rem; place-self:center;">📖</span>}
+        </div>
+        <div dir={info.dir}>
+          <h1 lang={lang} style="font-family: var(--font-latin); font-size: clamp(1.6rem, 3.4vw, 2.4rem); margin: 0 0 0.6rem;">{title}</h1>
+          {description && <p style="color: var(--ink-soft); font-size: 1.05rem;" lang={lang}>{description}</p>}
+          <p style="color: var(--ink-faint); font-size: 0.9rem;">
+            {SITE.author} · {formatDate(pubDate, lang)} · {chapters.length} chapters
+          </p>
+          {tags.length > 0 && <div class="tag-row">{tags.map((t) => <span class="tag">{t}</span>)}</div>}
+          <div style="margin-top: 1.2rem;">
+            {firstChapter ? (
+              <a class="btn btn-primary" href={`/books/${book.id}/${firstChapter.id.split('/').pop()}/`}>
+                Start reading
+              </a>
+            ) : (
+              <span class="notice">Chapters coming soon.</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2.6rem;">Table of contents</h2>
+      <ol style="line-height: 2.1; max-width: 640px;">
+        {chapters.map((c) => (
+          <li>
+            <a href={`/books/${book.id}/${c.id.split('/').pop()}/`} lang={c.data.lang}>{c.data.title}</a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</Base>

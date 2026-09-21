@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { langInfo } from '../data/site';
+
+interface Props {
+  book: CollectionEntry<'books'>;
+}
+
+const { book } = Astro.props;
+const { title, description, lang, cover, tags } = book.data;
+const info = langInfo(lang);
+const href = `/books/${book.id}/`;
+const rtlCover = info.dir === 'rtl';
+---
+
+<article class="card book-card" dir={info.dir} lang={lang}>
+  <a href={href} class={`card-media ${rtlCover ? 'rtl-cover' : ''}`} aria-hidden="true" tabindex="-1">
+    {cover ? <img src={cover} alt="" loading="lazy" /> : <span style="font-size:2rem">📖</span>}
+    <span class="lang-chip">{info.native}</span>
+  </a>
+  <div class="card-body">
+    <h3 class="card-title" lang={lang}>
+      <a href={href}>{title}</a>
+    </h3>
+    {description && <p class="card-desc" lang={lang}>{description}</p>}
+    <div class="card-meta">
+      <span>{tags.length > 0 ? tags.join(' · ') : 'Book'}</span>
+    </div>
+  </div>
+</article>

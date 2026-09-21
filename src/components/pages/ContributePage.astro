@@ -1,0 +1,230 @@
+---
+/**
+ * Contribute — locale-aware "Publish with us" page with the file-upload form.
+ * Rendered at:
+ *   /contribute/          (English)
+ *   /ar/contribute/       (العربية)
+ *   /ur/contribute/       (اردو)
+ */
+import Base from '../../layouts/Base.astro';
+import { CONTRIBUTE } from '../../data/contribute';
+import { SITE, FIKRCD, LINKS } from '../../data/profile';
+import { t, type Locale } from '../../i18n/ui';
+
+interface Props {
+  locale: Locale;
+  langPath?: string;
+}
+
+const { locale, langPath = '' } = Astro.props;
+const T = t(locale);
+const upload = CONTRIBUTE.upload;
+const uploadEnabled = upload.enabled;
+
+const filesLabel = T.form_files
+  .replace('{n}', String(upload.maxFiles))
+  .replace('{mb}', String(upload.maxFileMb));
+const focusNote = T.cont_focus_note.replace('{langs}', CONTRIBUTE.alsoAccepted.join(', '));
+
+const title = `${T.cont_h1} — ${T.site_title}`;
+const alternates = {
+  en: '/contribute/',
+  ar: '/ar/contribute/',
+  ur: '/ur/contribute/',
+};
+---
+
+<Base title={title} description={T.cont_mission} lang={locale} alternates={alternates}>
+  <article>
+    <header class="article-hero">
+      <div class="container">
+        <p class="crumb">
+          <a href={`${langPath}/`}>{T.nav_home}</a> / <span>{T.cont_crumbs}</span>
+        </p>
+        <h1>{T.cont_h1}</h1>
+        <div class="meta">
+          <span>{T.cont_tag}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="prose">
+      <div class="prose-inner">
+        <p class="lede">{T.cont_mission}</p>
+
+        <div class="notice">
+          <strong>{T.cont_focus}</strong> {CONTRIBUTE.focus.join(' · ')} {focusNote}
+        </div>
+
+        <h2>{T.cont_what}</h2>
+        <div class="content-types">
+          {T.types.map((ty) => (
+            <span class="content-type" style="flex-direction: column; align-items: flex-start; gap: 0.1rem;">
+              <strong>{ty.t}</strong>
+              <small class="data-note" style="font-style: normal;">{ty.n}</small>
+            </span>
+          ))}
+        </div>
+
+        <h2>{T.cont_how}</h2>
+        <p class="data-note">{T.cont_how_note}</p>
+        <ol style="line-height: 1.9;">
+          {T.process.map((p) => <li><strong>{p.s}.</strong> {p.d}</li>)}
+        </ol>
+
+        <h2>{T.cont_standards}</h2>
+        <ul>
+          {T.standards_list.map((s) => <li>{s}</li>)}
+        </ul>
+
+        <h2>{T.cont_rights}</h2>
+        <ul>
+          {T.rights_list.map((s) => <li>{s}</li>)}
+        </ul>
+
+        <h2>{T.cont_channel}</h2>
+
+        {uploadEnabled ? (
+          <form id="submission-form" class="submission-form" novalidate>
+            <div class="form-grid">
+              <label>
+                <span>{T.form_name} <em>*</em></span>
+                <input name="name" type="text" required maxlength="200" autocomplete="name" />
+              </label>
+              <label>
+                <span>{T.form_email} <em>*</em></span>
+                <input name="email" type="email" required maxlength="200" autocomplete="email" />
+              </label>
+              <label>
+                <span>{T.form_type}</span>
+                <select name="workType">
+                  {T.types.map((ty) => <option value={ty.t}>{ty.t}</option>)}
+                  <option value="other">{T.form_other}</option>
+                </select>
+              </label>
+              <label>
+                <span>{T.form_lang}</span>
+                <select name="language">
+                  {CONTRIBUTE.focus.map((l) => <option value={l}>{l}</option>)}
+                  {CONTRIBUTE.alsoAccepted.map((l) => <option value={l}>{l}</option>)}
+                  <option value="other">{T.form_other}</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              <span>{T.form_about}</span>
+              <textarea name="about" rows="4" maxlength="2000"
+                placeholder={T.form_about_ph}></textarea>
+            </label>
+            <label>
+              <span>{filesLabel}</span>
+              <input name="files" type="file" multiple
+                accept=".doc,.docx,.pdf,.txt,.md,.rtf,.odt,.jpg,.jpeg,.png,.zip" />
+            </label>
+            <label>
+              <span>{T.form_challenge} <strong>kohistan</strong> <em>*</em></span>
+              <input name="challenge" type="text" required autocomplete="off" />
+            </label>
+            <div class="form-note data-note">
+              {T.form_privacy}
+            </div>
+            <button class="btn btn-primary" type="submit">{T.form_send}</button>
+            <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        ) : (
+          <div class="notice">
+            <strong>{T.cont_coming}</strong> {T.cont_coming_note}
+            <a href={LINKS.fikrcdSite} target="_blank" rel="noopener">{FIKRCD.abbrev}</a>.
+          </div>
+        )}
+
+        <h2>{T.cont_where}</h2>
+        <ul>
+          {T.where.map((w, i) => (
+            <li>
+              <a href={['/articles/', '/research/indus-kohistani-resources/',
+                        '/folklore/', '/archive/',
+                        '/languages/indus-kohistani/'][i]}>{w.l}</a> — {w.d}
+            </li>
+          ))}
+        </ul>
+
+        <p class="data-note" style="margin-top: 1.6rem;">
+          {T.cont_via}
+        </p>
+      </div>
+    </div>
+  </article>
+
+  {uploadEnabled && (
+    <script define:vars={{
+      endpoint: upload.endpoint,
+      maxFiles: upload.maxFiles,
+      maxFileMb: upload.maxFileMb,
+      msgNeedfile: T.client.needfile,
+      msgMany: T.client.many.replace('{n}', String(upload.maxFiles)),
+      msgLarge: T.client.large,
+      msgSending: T.client.sending,
+      msgOk: T.client.ok,
+      msgErr: T.client.err,
+      msgNoEndpoint: T.client.noendpoint,
+      mbLabel: String(upload.maxFileMb),
+    }}>
+      const form = document.getElementById('submission-form');
+      const status = document.getElementById('form-status');
+      const btn = form ? form.querySelector('button[type=submit]') : null;
+
+      function say(msg, cls) {
+        if (status) {
+          status.textContent = msg;
+          status.className = 'form-status ' + cls;
+        }
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+
+        const files = Array.from(data.getAll('files')).filter((f) => f && f.size > 0);
+        if (files.length === 0) {
+          say(msgNeedfile, 'err');
+          return;
+        }
+        if (files.length > maxFiles) {
+          say(msgMany, 'err');
+          return;
+        }
+        for (const f of files) {
+          if (f.size > maxFileMb * 1024 * 1024) {
+            say(msgLarge.replace('{name}', f.name).replace('{mb}', mbLabel), 'err');
+            return;
+          }
+        }
+
+        btn.disabled = true;
+        say(msgSending, '');
+
+        // Receiver not deployed yet: endpoint is empty.
+        if (!endpoint) {
+          form.reset();
+          say(msgNoEndpoint, 'err');
+          btn.disabled = false;
+          return;
+        }
+
+        // Apps Script endpoints don't return CORS headers for reading responses,
+        // so we POST no-cors (multipart is a simple request — no preflight)
+        // and treat a completed send as accepted.
+        try {
+          await fetch(endpoint, { method: 'POST', body: data, mode: 'no-cors' });
+          form.reset();
+          say(msgOk, 'ok');
+        } catch {
+          say(msgErr, 'err');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    </script>
+  )}
+</Base>

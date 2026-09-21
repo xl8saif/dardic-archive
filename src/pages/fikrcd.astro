@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import { FIKRCD, LINKS, DIALECTS } from '../data/profile';
+---
+
+<Base title={`${FIKRCD.abbrev} — ${FIKRCD.fullName}`} description={FIKRCD.mission}>
+  <section class="section">
+    <div class="container" style="max-width: 820px;">
+      <p class="crumb" style="color: var(--ink-faint); font-size: 0.88rem;">
+        <a href="/research/">Research</a> / <span>FiKR&CD</span>
+      </p>
+      <h1 style="font-family: var(--font-latin); margin-bottom: 0.2rem;">{FIKRCD.abbrev}</h1>
+      <p style="color: var(--ink-soft); font-size: 1.08rem; margin-top: 0;">
+        {FIKRCD.fullName}
+      </p>
+
+      <div class="notice" style="margin: 1.4rem 0;">
+        <strong>Mission.</strong> {FIKRCD.mission}
+      </div>
+
+      <h2 style="font-family: var(--font-latin);">Established</h2>
+      <p>{FIKRCD.established}</p>
+
+      <h2 style="font-family: var(--font-latin);">Founders</h2>
+      <ul>
+        {FIKRCD.founders.map((f) => <li>{f}</li>)}
+      </ul>
+
+      <h2 style="font-family: var(--font-latin);">Language scope</h2>
+      <div class="tag-row">
+        {FIKRCD.languageScope.map((l) => <span class="tag">{l}</span>)}
+      </div>
+      <p class="data-note">Related research: {FIKRCD.relatedResearch}.</p>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Research areas</h2>
+      <ul class="scope-list">
+        {FIKRCD.researchAreas.map((a) => <li>{a}</li>)}
+      </ul>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Dialects under documentation</h2>
+      <div class="tag-row">
+        {DIALECTS.map((d) => <span class="tag">{d.name}</span>)}
+      </div>
+      <p class="data-note">
+        Documentation records for each variety are being prepared; they will name the
+        geographic and community context explicitly as verified data becomes available.
+      </p>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Translation &amp; written resources</h2>
+      <p>
+        Written-resource production <em>into</em> Indus-Kohistani — translation, adaptation,
+        educational and language resources, publication — is a core FiKR&amp;CD-adjacent effort
+        to expand the language’s written and digital presence. The research archive:
+        <a href="/research/indus-kohistani-resources/"><strong>Indus-Kohistani Translation &amp; Written Resources</strong></a>.
+      </p>
+
+      <h2 style="font-family: var(--font-latin); margin-top: 2rem;">Online</h2>
+      <ul>
+        <li><a href={LINKS.fikrcdSite} target="_blank" rel="noopener">{LINKS.fikrcdSite}</a></li>
+        <li><a href={LINKS.fikrcdGitHub} target="_blank" rel="noopener">{LINKS.fikrcdGitHub}</a></li>
+      </ul>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { langInfo, formatDate } from '../data/site';
+
+interface Props {
+  article: CollectionEntry<'articles'>;
+}
+
+const { article } = Astro.props;
+const { title, description, pubDate, lang, cover, coverCredit, tags } = article.data;
+const info = langInfo(lang);
+const href = `/articles/${article.id}/`;
+---
+
+<article class="card" dir={info.dir} lang={lang}>
+  <a href={href} class="card-media" aria-hidden="true" tabindex="-1">
+    {cover ? <img src={cover} alt="" loading="lazy" /> : null}
+    <span class="lang-chip">{info.native}</span>
+  </a>
+  <div class="card-body">
+    <h3 class="card-title" lang={lang}>
+      <a href={href}>{title}</a>
+    </h3>
+    {description && <p class="card-desc" lang={lang}>{description}</p>}
+    <div class="card-meta">
+      <time datetime={pubDate.toISOString()}>{formatDate(pubDate, lang)}</time>
+      {tags.length > 0 && (
+        <span class="tag-row">
+          {tags.slice(0, 3).map((t) => <span class="tag">{t}</span>)}
+        </span>
+      )}
+      {coverCredit && <span class="dot">•</span>}
+      {coverCredit && <span title="Image credit">{coverCredit}</span>}
+    </div>
+  </div>
+</article>
