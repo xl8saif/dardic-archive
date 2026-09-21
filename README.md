@@ -1,131 +1,137 @@
-# Research Blog — Google Drive → Polished, Multilingual Blog
+# The Dardic Archive
 
-A personal research blog where articles, columns and books written in **Google Docs / Word / PDF** on Google Drive are converted into beautifully formatted posts — with automatically fetched, freely licensed images — and published after **your explicit review**.
+**Language research · preservation · translation & localization · digital language work**
+*Saif Ullah — https://xl8saif.github.io/dardic-archive/*
 
-Languages supported with full right-to-left layout and per-script typography:
+A trilingual (English · العربية · اردو) research and publishing platform focused on the
+endangered languages of the Indus Kohistan — above all **Indus-Kohistani** and **Shina** —
+alongside professional translation & localization work (Arabic ↔ Urdu, Arabic ↔ English,
+Persian) and digital language technology (multilingual publishing, RTL systems, Urdu
+Nastaliq typography, digital preservation).
 
-| Code | Language | Direction | Font |
-|---|---|---|---|
-| `en` | English | LTR | Charter (serif) |
-| `ur` | اردو (Urdu) | RTL | **Noto Nastaliq Urdu** |
-| `ar` | العربية (Arabic) | RTL | Amiri |
-| `mvb` | Indus-Kohistani | RTL | Amiri |
-| `scl` | Shina | RTL | Amiri |
-
----
-
-## How publishing works
-
-```
-Google Drive (Blog/Articles, Blog/Books)      ← you write here
-        │  python sync/pull.py                 read-only, one command
-        ▼
-src/content/… (status: draft)                 ← converted, images fetched
-        │  python sync/review.py → :5555       review dashboard
-        ▼  [Approve & Publish]
-src/content/… (status: published)
-        │  git add . && git commit && git push
-        ▼
-GitHub Actions → astro build → GitHub Pages   ← live site
-```
-
-**Nothing publishes without your approval.** Drive is only ever read; your originals are untouched.
+> **Editorial rule:** nothing is invented. Scale figures are marked *reported*, only
+> verified DOIs are published, and nothing goes live without the editor's review.
 
 ---
 
-## Quick start
+## Site sections
 
-```powershell
-cd research-blog
-
-# 1. Site dependencies (Node 22+)
-npm install
-
-# 2. Pipeline dependencies (Python 3.10+)
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements-sync.txt
-
-# 3. Pixabay (optional but recommended)
-copy .env.example .env    # then paste your free key from https://pixabay.com/api/docs/
-```
-
-### One-time Google Cloud setup (~5 minutes, free)
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com/) → create a project (any name, e.g. `research-blog`).
-2. **APIs & Services → Library** → search **Google Drive API** → **Enable**.
-3. **APIs & Services → OAuth consent screen** → External → fill only your email → add yourself as a **Test user**.
-4. **Credentials → Create credentials → OAuth client ID** → type **Desktop app** → **Download JSON**.
-5. Save it as `research-blog/sync/client_secret.json` (gitignored).
-
-### Google Drive layout
-
-Create a folder named **`Blog`** in your Drive:
-
-```
-Blog/
-├── Articles/
-│   ├── English/           ← subfolder name sets the language
-│   ├── Urdu/
-│   ├── Arabic/
-│   └── Shina/
-└── Books/
-    └── My Book Title/     ← one folder = one book
-        ├── 00 - Introduction.gdoc / .docx / .pdf
-        ├── 01 - First Chapter.docx
-        ├── 02 - ...
-        └── cover.jpg      ← optional
-```
-
-Language is chosen by (in priority order):
-1. **Filename tag** — `My Column [ur].docx` (also `[en]`, `[ar]`, `[mvb]`, `[scl]`)
-2. **Text detection** — Arabic-script content defaults to Urdu; refine per folder
-3. **Subfolder name** — `English/`, `Urdu/`, `Arabic/`, `Kohistani/`, `Shina/`
-
-### Daily workflow
-
-```powershell
-cd research-blog
-
-python sync/pull.py        # 1. pull + convert + fetch images (drafts only)
-python sync/review.py      # 2. review at http://127.0.0.1:5555 → Approve
-                           # 3. publish what you approved:
-git add . && git commit -m "Publish" && git push
-```
-
-The dev server (`npm run dev`) shows approved posts immediately; the GitHub Actions workflow deploys to Pages on every push.
-
----
-
-## File-by-file map
-
-| Path | Purpose |
+| Route | Section |
 |---|---|
-| `sync/pull.py` | Orchestrator: scans Drive, converts, enriches images, writes drafts, writes `sync/pull-report.md` |
-| `sync/drive.py` | OAuth + read-only Drive access (token cached in `sync/token.json`) |
-| `sync/converters.py` | Google Docs HTML / `.docx` (mammoth) / PDF → clean markdown; extracts embedded images |
-| `sync/images.py` | Pixabay (with key) → Openverse (no key) image search, downloads, credits |
-| `sync/languages.py` | Language/direction detection, transliterating slugs |
-| `sync/review.py` | Flask dashboard at `127.0.0.1:5555` — preview drafts as they will render, approve/revert |
-| `src/content/` | Articles & books as markdown; `status:` controls visibility |
-| `.github/workflows/deploy.yml` | Build & deploy to GitHub Pages |
+| `/` · `/ar/` · `/ur/` | Localized homepages (language switcher in the header) |
+| `/research/` | Research index (Indus-Kohistani, Shina, Urdu, Arabic, …) |
+| `/languages/…` | Language profiles incl. dialects, orthography tables, typography |
+| `/research/indus-kohistani-resources/` | **IK Translation & Written Resources** archive — searchable/filterable catalogue of written-resource works (schema-ready; records imported via JSON) |
+| `/publications/` | Verified publication records (DOIs) |
+| `/projects/` | Professional & research projects (PUBG MOBILE, iFLYTEK, Hajj & Umrah, CloudTrans, FiKR&CD …) |
+| `/translation/` | Translation & localization experience |
+| `/digital/` · `/folklore/` | Digital language work · folklore & oral traditions |
+| `/contribute/` · `/ar/contribute/` · `/ur/contribute/` | **Publish with us** — contributor platform with editorial review gate and file-upload form |
+| `/archive/` | Everything, filterable by year / language / category |
+| `/articles/…` | Blog articles; chrome follows the article language |
 
-## Configuration (`sync/config.yaml`)
+## Tech stack
 
-- `drive.root` — name of the root folder in Drive (`Blog`)
-- `images.provider_order` — `[pixabay, openverse]`; falls back automatically
-- `images.max_per_post` — in-body images placed after major headings
-- `review.port` — dashboard port (default 5555)
+- **Astro** (static, zero-JS by default) — `npm run dev` / `npm run build`
+- **UI i18n** — `src/i18n/ui.ts` (EN/AR/UR dictionaries; typed — a missing key fails the build)
+- **Fonts** — Noto Nastaliq Urdu, Amiri, Scheherazade New (for ڇ څ ݜ ڙ ݨ), Inter — all self-hosted via fontsource
+- **RSS + sitemap + robots.txt** generated at build
+- **SEO** — canonical URLs, hreflang alternates, Open Graph/Twitter, Person & Article JSON-LD
 
-## Notes & limits
+## Project structure
 
-- PDFs are text-extracted (headings/formatting are lost) and the original file is saved as a download link at the end of the post; prefer Docs/Word for the reading body.
-- Re-running `pull.py` is **idempotent** — unchanged files are skipped via content hash + modified time; your `tags`, `pubDate` and `status` survive re-syncs.
-- The review dashboard binds to `127.0.0.1` only — nothing is reachable from the network.
-- Books publish as a whole (cover + all chapters); chapter-level approval comes later.
+```
+src/
+├── i18n/ui.ts                  ← UI translations (en / ar / ur)
+├── data/
+│   ├── profile.ts              ← authoritative master profile (identity, SITE, links)
+│   ├── professional.ts         ← projects, publications, language profiles (verified facts)
+│   ├── ik-resources.json       ← IK Written Resources dataset (batch-import works here)
+│   ├── ikResources.ts          ← schema + loader for the archive above
+│   ├── bookTranslations.ts     ← book-translation records (added only when verified)
+│   ├── contribute.ts           ← contributor platform config (upload endpoint, limits)
+│   └── site.ts                 ← language codes, directions, fonts, date formatting
+├── content/
+│   ├── articles/               ← markdown posts; frontmatter `status:` controls visibility
+│   └── books/                  ← books (folder = book, files = chapters)
+├── components/pages/           ← locale-aware Home & Contribute page components
+├── layouts/Base.astro          ← SEO head, nav, language switcher, footer
+└── pages/                      ← routes (see table above)
+sync/                           ← Google Drive → blog pipeline (Python, read-only)
+scripts/google-apps-script-submissions.gs  ← contributor-upload receiver (Apps Script)
+.github/workflows/deploy.yml    ← build & deploy to GitHub Pages on push to main
+```
 
-## Roadmap ideas
+## Local development
 
-- Newsletter signup, public search, comments (giscus)
-- CI-side auto-sync via a Drive service account
-- PDF downloads per book, per-chapter audio embedding
+```bash
+npm install          # Node 22+
+npm run dev          # http://127.0.0.1:4321
+npm run build        # production build → dist/
+```
+
+The Python sync pipeline (optional — only for Drive publishing) needs
+`python -m venv .venv && pip install -r requirements-sync.txt` plus OAuth setup
+described below.
+
+## Content workflow: Google Drive → review → publish
+
+Nothing publishes without approval. Drive is only ever **read**.
+
+```
+Google Drive (Blog/Articles, Blog/Books)      ← write in Docs / Word / PDF
+        │  python sync/pull.py                ← converts to drafts, fetches free images
+        ▼
+src/content/…  (status: draft)
+        │  python sync/review.py → http://127.0.0.1:5555
+        ▼  [Approve & Publish]
+status: published  →  git commit & push  →  live in ~1 min
+```
+
+One-time setup (details in the original docs / `sync/config.yaml`):
+
+1. Google Cloud project with the **Drive API** enabled; OAuth **Desktop** client saved as
+   `sync/client_secret.json` (gitignored).
+2. Drive folder `Blog/Articles/<Language>/` (subfolder sets the language, or tag the
+   filename: `My Column [ur].docx`).
+3. `.env` with a free Pixabay key (optional — falls back to Openverse).
+
+Languages: `en`, `ur` (Nastaliq), `ar`, `mvb` (Indus-Kohistani), `scl` (Shina) —
+direction and typography switch automatically per piece.
+
+## Contributor submissions (Publish with us)
+
+`/contribute/` hosts a review-gated upload form (files ≤ 15 MB ×3). Submissions are
+received by a **Google Apps Script Web App** (`scripts/google-apps-script-submissions.gs`)
+that files them into your Drive under `Blog/Submissions`. To activate:
+
+1. Create the script at script.google.com from the `.gs` file (steps in its header).
+2. Deploy as Web App (Execute as: Me · Access: Anyone) and copy the `/exec` URL.
+3. Paste it into `src/data/contribute.ts` → `upload.endpoint` (`enabled: true` is already set).
+
+## Deployment
+
+GitHub Actions (`.github/workflows/deploy.yml`) builds and deploys to **GitHub Pages**
+on every push to `main` (~1 minute). Requires the repo variable `SITE_URL`
+(Actions → Variables) — set to `https://xl8saif.github.io/dardic-archive/`.
+
+To publish changes: commit and push `main`. To publish Drive drafts: run the sync +
+review flow above first, then push.
+
+## Adding content
+
+- **Article** — drop a `.md` file into `src/content/articles/` with frontmatter
+  (`title`, `description`, `pubDate`, `lang`, `category`, `tags`, `status: published`,
+  optionally `translations`, `references`, `doi`, `featured`).
+- **IK archive work** — append an object to `works` in `src/data/ik-resources.json`
+  (a documented `$schema` example ships inside the file). Dialects are preserved
+  verbatim; private files stay private via `visibility`.
+- **Language profile / project / publication fact** — edit `src/data/professional.ts`
+  (or `profile.ts` for identity). Unverified items must stay flagged.
+- **UI translation** — `src/i18n/ui.ts`; all three locales must stay key-complete.
+
+## License & attribution
+
+Site content © Saif Ullah. Third-party images carry per-item credits (e.g. cover
+photos from free-license providers); files marked private in the IK archive are
+deliberately not exposed.
