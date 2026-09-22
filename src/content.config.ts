@@ -48,6 +48,8 @@ const articles = defineCollection({
     publication: z.string().optional(),
     edition: z.string().optional(),
     issueNumber: z.number().optional(),
+    authorName: z.string().optional(),
+    authorRole: z.string().optional(),
     /* SEO */
     metaTitle: z.string().optional(),
     metaDescription: z.string().optional(),
