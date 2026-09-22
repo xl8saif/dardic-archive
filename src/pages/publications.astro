@@ -8,10 +8,26 @@ import { PUBLICATIONS, PUBLICATIONS_NOTE } from '../data/professional';
     <div class="container" style="max-width: 820px;">
       <h1 style="font-family: var(--font-latin);">Publications</h1>
       <p class="lede">
-        A structured record of published work. Each entry carries its DOI, language
-        associations and verification status; the record grows only as metadata is
-        verified against original sources.
+        Research records, publication metadata and a permanent home for quarterly issues of Shari.
       </p>
+
+      <section class="publication-feature">
+        <div>
+          <div class="magazine-kicker">QUARTERLY · DIGITAL PUBLICATION</div>
+          <h2><span class="magazine-name">Shari</span> Online Magazine</h2>
+          <p>
+            A dedicated editorial layer inside the Dardic Archive for articles on
+            Indus-Kohistani language, literature, culture, folklore, research,
+            documentation and community knowledge.
+          </p>
+          <div class="publication-feature-meta">
+            <span>Every 3 months</span><span>·</span><span>Permanent issue archive</span><span>·</span><span>Multilingual publishing</span>
+          </div>
+        </div>
+        <a class="btn btn-primary" href="/publications/shari/">Open Shari</a>
+      </section>
+
+      <h2 style="font-family: var(--font-latin); margin-top:2.8rem;">Research publications</h2>
 
       {PUBLICATIONS.map((pub) => (
         <article class="card" style="margin: 1.4rem 0;">
