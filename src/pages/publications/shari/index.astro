@@ -1,0 +1,63 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ArticleCard from '../../../components/ArticleCard.astro';
+import { getCollection } from 'astro:content';
+import { SHARI, SHARI_ISSUES } from '../../../data/shari';
+
+const articles = (await getCollection('articles', ({ data }) => data.status === 'published' && data.publication === SHARI.slug))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const latestIssue = SHARI_ISSUES[0];
+const issueArticles = latestIssue ? articles.filter((a) => a.data.edition === latestIssue.edition) : [];
+---
+
+<Base title="Shari — Online Magazine" description="Shari Online Magazine — a quarterly publication for Indus-Kohistani language, literature, culture, research and community knowledge.">
+  <section class="magazine-hero">
+    <div class="container">
+      <div class="magazine-kicker">DARDIC ARCHIVE · QUARTERLY PUBLICATION</div>
+      <h1><span class="magazine-name">Shari</span> <span class="magazine-subtitle">Online Magazine</span></h1>
+      <p class="magazine-dek">A living publication for Indus-Kohistani language, literature, culture, research, oral traditions and the people who keep them alive.</p>
+      <div class="magazine-meta"><span>Published every 3 months</span><span>·</span><span>Indus-Kohistani · Urdu · English</span></div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <div class="magazine-grid">
+        <div>
+          <div class="section-head"><h2>Current edition</h2><a href="/publications/">All publications</a></div>
+          {latestIssue && (
+            <article class="issue-feature">
+              <div class="issue-number">ISSUE {String(latestIssue.number).padStart(2, '0')}</div>
+              <div>
+                <p class="issue-label">{latestIssue.editionLabel}</p>
+                <h3>{latestIssue.title}</h3>
+                <p>{latestIssue.description}</p>
+                <div class="issue-actions">
+                  <a class="btn btn-primary" href={'/publications/shari/' + latestIssue.edition + '/'}>View edition</a>
+                  <span class="data-note">{issueArticles.length} published {issueArticles.length === 1 ? 'article' : 'articles'}</span>
+                </div>
+              </div>
+            </article>
+          )}
+        </div>
+        <aside class="magazine-manifesto">
+          <span class="magazine-kicker">EDITORIAL SCOPE</span>
+          <h2>One issue. One quarter. A durable record.</h2>
+          <p>Shari is designed as an archive-first magazine: each quarterly issue remains permanently addressable, while every article also becomes part of the wider Dardic Archive.</p>
+          <ul><li>Language and orthography</li><li>Literature, folklore and oral tradition</li><li>Research and documentation</li><li>Translations and textual heritage</li><li>Community voices and field notes</li></ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+  <section class="section" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-head"><h2>Issue archive</h2><span>{SHARI_ISSUES.length} planned editions</span></div>
+      <div class="issue-list">
+        {SHARI_ISSUES.map((issue) => {
+          const count = articles.filter((a) => a.data.edition === issue.edition).length;
+          return <a class="issue-row" href={'/publications/shari/' + issue.edition + '/'}><span class="issue-row-number">No. {String(issue.number).padStart(2, '0')}</span><span class="issue-row-main"><strong>{issue.title}</strong><small>{issue.editionLabel}</small></span><span class="issue-row-count">{count} {count === 1 ? 'article' : 'articles'}</span></a>;
+        })}
+      </div>
+    </div>
+  </section>
+</Base>
