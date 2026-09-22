@@ -138,6 +138,43 @@ const alternates = {
           </div>
         )}
 
+        <section class="admin-publisher" aria-labelledby="admin-publisher-title">
+          <div class="admin-publisher-head">
+            <div>
+              <span class="magazine-kicker">EDITORIAL ADMIN</span>
+              <h2 id="admin-publisher-title">Publish an article</h2>
+              <p>Admin-only publishing. Publish under your own name or enter another author's name and role. The article is committed directly to the archive repository and will enter the live site through the normal deployment pipeline.</p>
+            </div>
+            <span class="admin-badge">ADMIN</span>
+          </div>
+
+          <form id="admin-login" class="admin-login">
+            <label><span>Admin password</span><input name="password" type="password" autocomplete="current-password" required /></label>
+            <button class="btn btn-primary" type="submit">Unlock publisher</button>
+            <p id="admin-login-status" class="form-status" role="status"></p>
+          </form>
+
+          <form id="admin-publish" class="admin-publish" hidden>
+            <div class="form-grid">
+              <label><span>Article title <em>*</em></span><input name="title" required maxlength="180" /></label>
+              <label><span>Publication date <em>*</em></span><input name="pubDate" type="date" value={new Date().toISOString().slice(0,10)} required /></label>
+              <label><span>Author name <em>*</em></span><input name="authorName" required maxlength="160" value={SITE.author} /></label>
+              <label><span>Author role</span><input name="authorRole" maxlength="100" value="Author" /></label>
+              <label><span>Language</span><select name="lang"><option value="en">English</option><option value="ur">Urdu</option><option value="ar">Arabic</option><option value="mvy">Indus-Kohistani</option><option value="scl">Shina</option></select></label>
+              <label><span>Category</span><input name="category" value="Research" /></label>
+              <label><span>Publication</span><select name="publication"><option value="">General archive</option><option value="shari">Shari Online Magazine</option></select></label>
+              <label><span>Edition</span><select name="edition"><option value="">Not an issue</option><option value="2026-q4">2026 Q4 — Issue 01</option><option value="2027-q1">2027 Q1 — Issue 02</option><option value="2027-q2">2027 Q2 — Issue 03</option><option value="2027-q3">2027 Q3 — Issue 04</option></select></label>
+              <label><span>Issue number</span><input name="issueNumber" type="number" min="1" max="999" /></label>
+              <label><span>Tags</span><input name="tags" placeholder="language, folklore, research" /></label>
+              <label><span>Related languages</span><input name="relatedLanguages" placeholder="Indus-Kohistani, Urdu" /></label>
+            </div>
+            <label><span>Description</span><textarea name="description" rows="3" maxlength="500"></textarea></label>
+            <label><span>Article body — Markdown <em>*</em></span><textarea name="content" rows="18" required placeholder="Write or paste the final article here..."></textarea></label>
+            <div class="admin-actions"><button class="btn btn-primary" type="submit">Publish article</button><button class="btn btn-ghost" id="admin-lock" type="button">Lock</button></div>
+            <p id="admin-publish-status" class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
         <h2>{T.cont_where}</h2>
         <ul>
           {T.where.map((w, i) => (
@@ -155,6 +192,52 @@ const alternates = {
       </div>
     </div>
   </article>
+
+  <script>
+    const loginForm = document.getElementById('admin-login');
+    const publisher = document.getElementById('admin-publish');
+    const loginStatus = document.getElementById('admin-login-status');
+    const publishStatus = document.getElementById('admin-publish-status');
+    const sayAdmin = (el, msg, cls='') => { if (el) { el.textContent = msg; el.className = 'form-status ' + cls; } };
+
+    loginForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const password = new FormData(loginForm).get('password');
+      sayAdmin(loginStatus, 'Checking…');
+      try {
+        const r = await fetch('/api/admin/login', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({password}) });
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'Login failed.');
+        loginForm.hidden = true;
+        if (publisher) publisher.hidden = false;
+        sayAdmin(loginStatus, 'Publisher unlocked.', 'ok');
+      } catch (err) { sayAdmin(loginStatus, err.message || 'Login failed.', 'err'); }
+    });
+
+    document.getElementById('admin-lock')?.addEventListener('click', async () => {
+      await fetch('/api/admin/login', {method:'DELETE'});
+      if (publisher) publisher.hidden = true;
+      if (loginForm) loginForm.hidden = false;
+      sayAdmin(loginStatus, 'Publisher locked.');
+    });
+
+    publisher?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      const data = Object.fromEntries(new FormData(form).entries());
+      button.disabled = true;
+      sayAdmin(publishStatus, 'Publishing…');
+      try {
+        const r = await fetch('/api/admin/publish', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
+        const out = await r.json();
+        if (!r.ok) throw new Error(out.error || 'Publication failed.');
+        sayAdmin(publishStatus, 'Published successfully. The article is now in the repository and will appear after deployment.', 'ok');
+        form.reset();
+      } catch (err) { sayAdmin(publishStatus, err.message || 'Publication failed.', 'err'); }
+      finally { button.disabled = false; }
+    });
+  </script>
 
   {uploadEnabled && (
     <script define:vars={{
