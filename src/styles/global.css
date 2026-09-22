@@ -1386,3 +1386,13 @@ select.filter-chip {
   .publication-feature { align-items: flex-start; flex-direction: column; }
   .issue-row { grid-template-columns: 1fr; gap: .3rem; }
 }
+
+.admin-publisher{margin:2.5rem 0;padding:1.5rem;border:1px solid var(--glass-edge);border-radius:var(--radius);background:rgba(255,255,255,.62);box-shadow:var(--emboss);backdrop-filter:blur(var(--glass-blur)) saturate(1.3);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.3)}
+.admin-publisher-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:1.2rem}
+.admin-publisher-head h2{margin:.3rem 0 .45rem;font-family:var(--font-latin)}
+.admin-publisher-head p{max-width:70ch;margin:0;color:var(--ink-soft)}
+.admin-badge{font:700 .68rem var(--font-ui);letter-spacing:.12em;padding:.35rem .55rem;border:1px solid var(--accent);border-radius:999px;color:var(--accent)}
+.admin-login,.admin-publish{display:grid;gap:1rem}
+.admin-publish[hidden],.admin-login[hidden]{display:none}
+.admin-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+.form-status.ok{color:#176b42}.form-status.err{color:#a52a2a}
