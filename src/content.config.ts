@@ -44,6 +44,10 @@ const articles = defineCollection({
     imageCredits: z.array(z.string()).optional(),
     featured: z.boolean().default(false),
     status: z.enum(['draft', 'published']).default('draft'),
+    /** Optional periodical metadata. Used by Shari Online Magazine. */
+    publication: z.string().optional(),
+    edition: z.string().optional(),
+    issueNumber: z.number().optional(),
     /* SEO */
     metaTitle: z.string().optional(),
     metaDescription: z.string().optional(),
