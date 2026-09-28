@@ -1,7 +1,7 @@
 # The Dardic Archive
 
 **Language research · preservation · translation & localization · digital language work**
-*Saif Ullah — https://xl8saif.github.io/dardic-archive/*
+*Saif Ullah — Professional portfolio: https://xl8saif.github.io/site/ · Dardic Archive: https://xl8saif.github.io/dardic-archive/*
 
 A trilingual (English · العربية · اردو) research and publishing platform focused on the
 endangered languages of the Indus Kohistan — above all **Indus-Kohistani** and **Shina** —
